@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { deleteScheduleItem } from '../../src/tools/deleteScheduleItem.ts';
-import type { MasterTourClient } from '../../src/api/client.js';
+import type { MasterTourClient } from '../../src/api/client.ts';
 
 describe('deleteScheduleItem', () => {
   const mockClient = {

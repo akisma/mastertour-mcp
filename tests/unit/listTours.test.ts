@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { listTours } from '../../src/tools/listTours.js';
-import type { MasterTourClient } from '../../src/api/client.js';
+import { listTours } from '../../src/tools/listTours.ts';
+import type { MasterTourClient } from '../../src/api/client.ts';
 
 describe('listTours', () => {
   let mockClient: MasterTourClient;

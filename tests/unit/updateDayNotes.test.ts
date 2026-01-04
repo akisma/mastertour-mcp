@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { updateDayNotes } from '../../src/tools/updateDayNotes.ts';
-import type { MasterTourClient } from '../../src/api/client.js';
+import type { MasterTourClient } from '../../src/api/client.ts';
 
 describe('updateDayNotes', () => {
   const mockClient = {

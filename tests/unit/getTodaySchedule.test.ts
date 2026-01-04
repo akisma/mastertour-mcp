@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getTodaySchedule, formatSchedule } from '../../src/tools/getTodaySchedule.js';
-import type { MasterTourClient, DayResponse } from '../../src/api/client.js';
+import { getTodaySchedule, formatSchedule } from '../../src/tools/getTodaySchedule.ts';
+import type { MasterTourClient, DayResponse } from '../../src/api/client.ts';
 
 describe('getTodaySchedule', () => {
   const originalEnv = process.env;

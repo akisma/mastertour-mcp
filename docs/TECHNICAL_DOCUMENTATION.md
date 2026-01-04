@@ -252,6 +252,58 @@ Get tour crew members with contact info, grouped by role.
 }
 ```
 
+### Venue Research Tools
+
+#### search_past_venues
+Search venues from your historical tours by name, city, or state.
+
+**Input:**
+```typescript
+{
+  query: string,     // Search query (e.g., "palladium", "los angeles")
+  tourId?: string,   // Optional: limit to specific tour
+  limit?: number     // Max results (default 10)
+}
+```
+
+**Output:** Matching venues with IDs, capacities, and which tours used them.
+
+**Note:** Since Master Tour API doesn't provide global venue search, this searches within venues you've used on past tours.
+
+#### get_venue_details
+Get complete venue information by venue ID.
+
+**Input:**
+```typescript
+{
+  venueId: string   // Venue ID from search_past_venues or other tools
+}
+```
+
+**Output:** Complete venue data including:
+- Location (address, coordinates, timezone)
+- Contacts (main, box office, production, catering)
+- Production (stage dimensions, load-in, power, rigging)
+- Facilities (dressing rooms, showers, parking)
+- Equipment (audio, lighting, video, backline)
+- Local crew (union, minimums, penalties)
+- Logistics (directions, airports, nearby hotels/restaurants)
+- Promoter info (if assigned)
+
+#### get_upcoming_shows
+Get upcoming shows across all your tours, sorted by date.
+
+**Input:**
+```typescript
+{
+  tourId?: string,   // Optional: limit to specific tour
+  limit?: number,    // Max shows (default 10)
+  daysAhead?: number // Only shows within N days
+}
+```
+
+**Output:** Upcoming show days with venue, city, tour name, and day IDs.
+
 ---
 
 ## Testing
@@ -261,8 +313,8 @@ Get tour crew members with contact info, grouped by role.
 - **Integration Tests:** Real Master Tour account, test actual API calls
 
 ### Test Coverage
-- 12 test files
-- 73 tests passing
+- 15 test files
+- 100 tests passing
 - All tools have dedicated test suites
 
 ### Running Tests

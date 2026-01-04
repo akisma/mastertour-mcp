@@ -74,6 +74,111 @@ export interface TourEventsResponse {
   days: EventDayInfo[];
 }
 
+export interface VenueContact {
+  title: string;
+  contactName?: string;
+  phone?: string;
+  fax?: string;
+}
+
+export interface VenueProduction {
+  stageWings?: string;
+  dimensionsW?: string;
+  dimensionsD?: string;
+  dimensionsH?: string;
+  deckToGrid?: string;
+  trimHeight?: string;
+  access?: string;
+  dockType?: string;
+  powerComments?: string;
+  riggingComments?: string;
+  [key: string]: unknown;
+}
+
+export interface VenueFacilities {
+  dressingRooms?: string;
+  showers?: string;
+  truckParking?: string;
+  busParking?: string;
+  guestParking?: string;
+  parkingComments?: string;
+  [key: string]: unknown;
+}
+
+export interface VenueEquipment {
+  audio?: string;
+  lighting?: string;
+  video?: string;
+  backline?: string;
+  staging?: string;
+  [key: string]: unknown;
+}
+
+export interface VenueLogistics {
+  directions?: string;
+  closestCity?: string;
+  airportNotes?: string;
+  groundTransport?: string;
+  areaHotels?: string;
+  areaRestaurants?: string;
+  [key: string]: unknown;
+}
+
+export interface VenueLocalCrew {
+  localUnion?: string;
+  minimumIN?: string;
+  minimumOUT?: string;
+  penalties?: string;
+  crewComments?: string;
+  [key: string]: unknown;
+}
+
+export interface DayEvent {
+  eventId: string;
+  dayId: string;
+  venueId: string;
+  venueName: string;
+  venuePreviousName?: string;
+  venueAddressLine1?: string;
+  venueAddressLine2?: string;
+  venueCity?: string;
+  venueState?: string;
+  venueZip?: string;
+  venueCountry?: string;
+  venueLatitude?: string;
+  venueLongitude?: string;
+  venueTimeZone?: string;
+  venuePrimaryUrl?: string;
+  venuePrimaryEmail?: string;
+  venueCapacity?: string;
+  venueType?: string;
+  venueAgeRequirement?: string;
+  venuePublicNotes?: string;
+  venueContacts?: VenueContact[];
+  venueProduction?: VenueProduction;
+  venueFacilities?: VenueFacilities;
+  venueEquipment?: VenueEquipment;
+  venueLogistics?: VenueLogistics;
+  venueLocalCrew?: VenueLocalCrew;
+  promoterId?: string;
+  promoterName?: string;
+  promoterCity?: string;
+  promoterState?: string;
+  promoterContacts?: VenueContact[];
+  [key: string]: unknown;
+}
+
+export interface TourAllResponse {
+  tour: {
+    id: string;
+    artistName: string;
+    tourName: string;
+    legName: string;
+    days: EventDayInfo[];
+    [key: string]: unknown;
+  };
+}
+
 export interface MasterTourClient {
   listTours(): Promise<TourInfo[]>;
   getDay(dayId: string): Promise<DayResponse>;
@@ -81,6 +186,8 @@ export interface MasterTourClient {
   getTourHotels(tourId: string): Promise<TourHotelsResponse>;
   getTourCrew(tourId: string): Promise<CrewMember[]>;
   getTourEvents(tourId: string): Promise<TourEventsResponse>;
+  getTourAll(tourId: string): Promise<TourAllResponse>;
+  getDayEvents(dayId: string): Promise<DayEvent[]>;
   createScheduleItem(params: CreateScheduleItemParams): Promise<{ id: string }>;
   updateScheduleItem(itemId: string, params: UpdateScheduleItemParams): Promise<void>;
   deleteScheduleItem(itemId: string): Promise<void>;
@@ -333,6 +440,24 @@ export function createMasterTourClient(oauthClient: OAuthClient): MasterTourClie
         },
         days: data.tour.days || [],
       };
+    },
+
+    async getTourAll(tourId: string): Promise<TourAllResponse> {
+      const data = await get<{ tour: TourAllResponse['tour'] }>(`/tour/${tourId}/all`);
+      return {
+        tour: {
+          id: data.tour.id,
+          artistName: data.tour.artistName,
+          tourName: data.tour.tourName,
+          legName: data.tour.legName,
+          days: data.tour.days || [],
+        },
+      };
+    },
+
+    async getDayEvents(dayId: string): Promise<DayEvent[]> {
+      const data = await get<{ events: DayEvent[] }>(`/day/${dayId}/events`);
+      return data.events || [];
     },
   };
 }

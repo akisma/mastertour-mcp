@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { createServer } from '../../src/index.js';
+import { createServer } from '../../src/index.ts';
 
 describe('createServer', () => {
   it('should create an MCP server instance', () => {

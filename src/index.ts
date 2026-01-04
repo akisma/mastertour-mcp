@@ -21,6 +21,9 @@ import { listTours } from './tools/listTours.js';
 import { getTourHotels } from './tools/getTourHotels.js';
 import { getTourCrew } from './tools/getTourCrew.js';
 import { getTourEvents } from './tools/getTourEvents.js';
+import { searchPastVenues } from './tools/searchPastVenues.js';
+import { getVenueDetails } from './tools/getVenueDetails.js';
+import { getUpcomingShows } from './tools/getUpcomingShows.js';
 
 /**
  * Creates and configures the MCP server instance.
@@ -209,6 +212,67 @@ export function createServer(): McpServer {
       const client = createMasterTourClient(oauth);
       
       const result = await getTourEvents(client, { tourId, showsOnly });
+      
+      return {
+        content: [{ type: 'text', text: result }],
+      };
+    }
+  );
+
+  // Tool: search_past_venues
+  server.tool(
+    'search_past_venues',
+    'Search for venues from your past tours by name, city, or state. Returns venue IDs and basic info.',
+    {
+      query: z.string().describe('Search query - venue name, city, state, or any combination (e.g., "palladium", "los angeles", "stone pony nj")'),
+      tourId: z.string().optional().describe('Limit search to a specific tour (optional)'),
+      limit: z.number().optional().describe('Maximum results to return (default 10)'),
+    },
+    async ({ query, tourId, limit }) => {
+      const oauth = createOAuthClient();
+      const client = createMasterTourClient(oauth);
+      
+      const result = await searchPastVenues(client, { query, tourId, limit });
+      
+      return {
+        content: [{ type: 'text', text: result }],
+      };
+    }
+  );
+
+  // Tool: get_venue_details
+  server.tool(
+    'get_venue_details',
+    'Get complete venue information including production specs, contacts, facilities, and logistics',
+    {
+      venueId: z.string().describe('The venue ID (from search_past_venues or other tools)'),
+    },
+    async ({ venueId }) => {
+      const oauth = createOAuthClient();
+      const client = createMasterTourClient(oauth);
+      
+      const result = await getVenueDetails(client, { venueId });
+      
+      return {
+        content: [{ type: 'text', text: result }],
+      };
+    }
+  );
+
+  // Tool: get_upcoming_shows
+  server.tool(
+    'get_upcoming_shows',
+    'Get upcoming shows across all your tours, sorted by date',
+    {
+      tourId: z.string().optional().describe('Limit to a specific tour (optional)'),
+      limit: z.number().optional().describe('Maximum shows to return (default 10)'),
+      daysAhead: z.number().optional().describe('Only show performances within N days from today'),
+    },
+    async ({ tourId, limit, daysAhead }) => {
+      const oauth = createOAuthClient();
+      const client = createMasterTourClient(oauth);
+      
+      const result = await getUpcomingShows(client, { tourId, limit, daysAhead });
       
       return {
         content: [{ type: 'text', text: result }],
