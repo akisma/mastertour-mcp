@@ -1,4 +1,5 @@
 import type { MasterTourClient, CrewMember } from '../api/client.js';
+import type { ToolResult, TourCrewOutput, CrewMemberOutput } from '../types/outputs.js';
 
 export interface GetTourCrewParams {
   tourId?: string;
@@ -45,7 +46,7 @@ function formatCrewMember(member: CrewMember): string[] {
 export async function getTourCrew(
   client: MasterTourClient,
   params: GetTourCrewParams
-): Promise<string> {
+): Promise<ToolResult<TourCrewOutput>> {
   const { tourId } = params;
 
   if (!tourId) {
@@ -56,6 +57,40 @@ export async function getTourCrew(
 
   const crew = await client.getTourCrew(tourId);
 
+  // Build structured data
+  const crewOutputs: CrewMemberOutput[] = crew.map((member) => ({
+    id: member.id || '',
+    name: getDisplayName(member),
+    title: member.title || 'Other',
+    department: member.title || 'Other', // Using title as department
+    email: member.email || undefined,
+    phone: member.phone || undefined,
+  }));
+
+  // Group by department
+  const byDepartment: Record<string, CrewMemberOutput[]> = {};
+  for (const member of crewOutputs) {
+    if (!byDepartment[member.department]) {
+      byDepartment[member.department] = [];
+    }
+    byDepartment[member.department].push(member);
+  }
+
+  const data: TourCrewOutput = {
+    tourId,
+    tourName: '', // Not available from this API
+    crew: crewOutputs,
+    totalCount: crew.length,
+    byDepartment,
+  };
+
+  // Build formatted text
+  const text = formatCrewText(crew, data);
+
+  return { data, text };
+}
+
+function formatCrewText(crew: CrewMember[], data: TourCrewOutput): string {
   const lines: string[] = [
     `👥 Tour Crew`,
     '─'.repeat(50),
@@ -99,7 +134,7 @@ export async function getTourCrew(
   }
 
   lines.push('─'.repeat(50));
-  lines.push(`Total: ${crew.length} crew member(s)`);
+  lines.push(`Total: ${data.totalCount} crew member(s)`);
 
   return lines.join('\n');
 }

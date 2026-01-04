@@ -124,9 +124,9 @@ describe('addScheduleItem', () => {
         startTime: '14:00',
       });
 
-      expect(result).toContain('Production meeting');
-      expect(result).toContain('added');
-      expect(result).toContain('14:00'); // Should show local time user requested
+      expect(result.text).toContain('Production meeting');
+      expect(result.text).toContain('added');
+      expect(result.text).toContain('14:00'); // Should show local time user requested
     });
   });
 });

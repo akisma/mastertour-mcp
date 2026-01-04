@@ -73,58 +73,58 @@ describe('getVenueDetails', () => {
   it('should return detailed venue information', async () => {
     const result = await getVenueDetails(mockClient, { venueId: 'venue1' });
     
-    expect(result).toContain('Hollywood Palladium');
-    expect(result).toContain('6215 Sunset Blvd');
-    expect(result).toContain('Los Angeles, CA 90028');
-    expect(result).toContain('Capacity: 3500');
-    expect(result).toContain('Type: Arena');
+    expect(result.text).toContain('Hollywood Palladium');
+    expect(result.text).toContain('6215 Sunset Blvd');
+    expect(result.text).toContain('Los Angeles, CA 90028');
+    expect(result.text).toContain('Capacity: 3500');
+    expect(result.text).toContain('Type: Arena');
   });
 
   it('should include venue contacts', async () => {
     const result = await getVenueDetails(mockClient, { venueId: 'venue1' });
     
-    expect(result).toContain('CONTACTS');
-    expect(result).toContain('Alan Shuman');
-    expect(result).toContain('323-962-7600');
-    expect(result).toContain('Box Office');
+    expect(result.text).toContain('CONTACTS');
+    expect(result.text).toContain('Alan Shuman');
+    expect(result.text).toContain('323-962-7600');
+    expect(result.text).toContain('Box Office');
   });
 
   it('should include production information', async () => {
     const result = await getVenueDetails(mockClient, { venueId: 'venue1' });
     
-    expect(result).toContain('PRODUCTION');
-    expect(result).toContain('Stage Dimensions');
-    expect(result).toContain('Deck to Grid');
-    expect(result).toContain('Load-In Access');
+    expect(result.text).toContain('PRODUCTION');
+    expect(result.text).toContain('Stage Dimensions');
+    expect(result.text).toContain('Deck to Grid');
+    expect(result.text).toContain('Load-In Access');
   });
 
   it('should include facilities information', async () => {
     const result = await getVenueDetails(mockClient, { venueId: 'venue1' });
     
-    expect(result).toContain('FACILITIES');
-    expect(result).toContain('Showers: Yes');
-    expect(result).toContain('Truck Parking');
+    expect(result.text).toContain('FACILITIES');
+    expect(result.text).toContain('Showers: Yes');
+    expect(result.text).toContain('Truck Parking');
   });
 
   it('should include local crew information', async () => {
     const result = await getVenueDetails(mockClient, { venueId: 'venue1' });
     
-    expect(result).toContain('LOCAL CREW');
-    expect(result).toContain('IATSE Local 33');
+    expect(result.text).toContain('LOCAL CREW');
+    expect(result.text).toContain('IATSE Local 33');
   });
 
   it('should include logistics information', async () => {
     const result = await getVenueDetails(mockClient, { venueId: 'venue1' });
     
-    expect(result).toContain('LOGISTICS');
-    expect(result).toContain('Directions');
+    expect(result.text).toContain('LOGISTICS');
+    expect(result.text).toContain('Directions');
   });
 
   it('should include promoter information', async () => {
     const result = await getVenueDetails(mockClient, { venueId: 'venue1' });
     
-    expect(result).toContain('PROMOTER');
-    expect(result).toContain('Live Nation');
+    expect(result.text).toContain('PROMOTER');
+    expect(result.text).toContain('Live Nation');
   });
 
   it('should show not found message for invalid venue ID', async () => {
@@ -132,8 +132,8 @@ describe('getVenueDetails', () => {
     
     const result = await getVenueDetails(mockClient, { venueId: 'nonexistent' });
     
-    expect(result).toContain('Venue Not Found');
-    expect(result).toContain('Could not find venue');
+    expect(result.text).toContain('Venue Not Found');
+    expect(result.text).toContain('Could not find venue');
   });
 
   it('should throw error when venue ID is missing', async () => {
@@ -144,7 +144,7 @@ describe('getVenueDetails', () => {
   it('should show data source information', async () => {
     const result = await getVenueDetails(mockClient, { venueId: 'venue1' });
     
-    expect(result).toContain('Data from: Test Artist - Spring 2026');
-    expect(result).toContain('2026-01-04');
+    expect(result.text).toContain('Data from: Test Artist - Spring 2026');
+    expect(result.text).toContain('2026-01-04');
   });
 });

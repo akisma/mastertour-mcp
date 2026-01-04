@@ -53,11 +53,11 @@ describe('getTourEvents', () => {
     const result = await getTourEvents(mockClient, { tourId: 'tour-123' });
 
     expect(mockClient.getTourEvents).toHaveBeenCalledWith('tour-123');
-    expect(result).toContain('Test Band');
-    expect(result).toContain('Summer 2024');
-    expect(result).toContain('Madison Square Garden');
-    expect(result).toContain('New York');
-    expect(result).toContain('Show Day');
+    expect(result.text).toContain('Test Band');
+    expect(result.text).toContain('Summer 2024');
+    expect(result.text).toContain('Madison Square Garden');
+    expect(result.text).toContain('New York');
+    expect(result.text).toContain('Show Day');
   });
 
   it('filters to show days only when showOnly is true', async () => {
@@ -101,9 +101,9 @@ describe('getTourEvents', () => {
 
     const result = await getTourEvents(mockClient, { tourId: 'tour-123', showsOnly: true });
 
-    expect(result).toContain('Show Day');
-    expect(result).not.toContain('Day Off');
-    expect(result).not.toContain('Travel');
+    expect(result.text).toContain('Show Day');
+    expect(result.text).not.toContain('Day Off');
+    expect(result.text).not.toContain('Travel');
   });
 
   it('includes day ID for each event', async () => {
@@ -126,7 +126,7 @@ describe('getTourEvents', () => {
 
     const result = await getTourEvents(mockClient, { tourId: 'tour-123' });
 
-    expect(result).toContain('day-abc-123');
+    expect(result.text).toContain('day-abc-123');
   });
 
   it('returns message when no events exist', async () => {
@@ -139,7 +139,7 @@ describe('getTourEvents', () => {
 
     const result = await getTourEvents(mockClient, { tourId: 'tour-123' });
 
-    expect(result).toContain('No events found');
+    expect(result.text).toContain('No events found');
   });
 
   it('throws error when no tour ID provided', async () => {

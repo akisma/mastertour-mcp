@@ -1,4 +1,5 @@
 import type { MasterTourClient } from '../api/client.js';
+import type { ToolResult, ScheduleMutationOutput } from '../types/outputs.js';
 
 export interface DeleteScheduleItemInput {
   itemId?: string;
@@ -8,7 +9,7 @@ export interface DeleteScheduleItemInput {
 export async function deleteScheduleItem(
   client: MasterTourClient,
   input: DeleteScheduleItemInput
-): Promise<string> {
+): Promise<ToolResult<ScheduleMutationOutput>> {
   // Validate required fields
   if (!input.itemId) {
     throw new Error('itemId is required');
@@ -30,5 +31,17 @@ export async function deleteScheduleItem(
 
   await client.deleteScheduleItem(input.itemId);
 
-  return `🗑️ "${title}" deleted`;
+  const data: ScheduleMutationOutput = {
+    success: true,
+    itemId: input.itemId,
+    syncId: existingItem.syncId,
+    action: 'deleted',
+    dayId: input.dayId,
+    title,
+  };
+
+  return {
+    data,
+    text: `🗑️ "${title}" deleted`,
+  };
 }

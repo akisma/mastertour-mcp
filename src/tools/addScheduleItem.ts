@@ -1,4 +1,5 @@
 import { fromZonedTime, formatInTimeZone } from 'date-fns-tz';
+import type { ToolResult, ScheduleMutationOutput } from '../types/outputs.js';
 
 export interface AddScheduleItemInput {
   dayId?: string;
@@ -22,7 +23,7 @@ export interface CreateScheduleItemParams {
 // Client interface for add schedule item operations
 export interface AddScheduleItemClient {
   getDay(dayId: string): Promise<{ day: { dayDate: string; timeZone: string } }>;
-  createScheduleItem(params: CreateScheduleItemParams): Promise<{ id: string }>;
+  createScheduleItem(params: CreateScheduleItemParams): Promise<{ id: string; syncId: string }>;
 }
 
 /**
@@ -41,7 +42,7 @@ function localTimeToUtc(date: string, time: string, timezone: string): string {
 export async function addScheduleItem(
   client: AddScheduleItemClient,
   input: AddScheduleItemInput
-): Promise<string> {
+): Promise<ToolResult<ScheduleMutationOutput>> {
   // Validate required fields
   if (!input.dayId) {
     throw new Error('dayId is required');
@@ -75,7 +76,19 @@ export async function addScheduleItem(
     timePriority: '',
   };
 
-  await client.createScheduleItem(params);
+  const result = await client.createScheduleItem(params);
 
-  return `✅ "${input.title}" added at ${input.startTime}`;
+  const data: ScheduleMutationOutput = {
+    success: true,
+    itemId: result.id,
+    syncId: result.syncId || '',
+    action: 'created',
+    dayId: input.dayId,
+    title: input.title,
+  };
+
+  return {
+    data,
+    text: `✅ "${input.title}" added at ${input.startTime}`,
+  };
 }

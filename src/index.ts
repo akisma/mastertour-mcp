@@ -55,7 +55,7 @@ function registerTools(server: McpServer, deps: ServerDependencies): void {
         tourId: tourId || config.defaultTourId,
         date,
       });
-      return { content: [{ type: 'text', text: result }] };
+      return { content: [{ type: 'text', text: result.text }] };
     }
   );
 
@@ -72,7 +72,7 @@ function registerTools(server: McpServer, deps: ServerDependencies): void {
     },
     async ({ dayId, title, startTime, endTime, details }) => {
       const result = await addScheduleItem(client, { dayId, title, startTime, endTime, details });
-      return { content: [{ type: 'text', text: result }] };
+      return { content: [{ type: 'text', text: result.text }] };
     }
   );
 
@@ -90,7 +90,7 @@ function registerTools(server: McpServer, deps: ServerDependencies): void {
     },
     async ({ itemId, dayId, title, startTime, endTime, details }) => {
       const result = await updateScheduleItem(client, { itemId, dayId, title, startTime, endTime, details });
-      return { content: [{ type: 'text', text: result }] };
+      return { content: [{ type: 'text', text: result.text }] };
     }
   );
 
@@ -104,7 +104,7 @@ function registerTools(server: McpServer, deps: ServerDependencies): void {
     },
     async ({ itemId, dayId }) => {
       const result = await deleteScheduleItem(client, { itemId, dayId });
-      return { content: [{ type: 'text', text: result }] };
+      return { content: [{ type: 'text', text: result.text }] };
     }
   );
 
@@ -120,7 +120,7 @@ function registerTools(server: McpServer, deps: ServerDependencies): void {
     },
     async ({ dayId, generalNotes, hotelNotes, travelNotes }) => {
       const result = await updateDayNotes(client, { dayId, generalNotes, hotelNotes, travelNotes });
-      return { content: [{ type: 'text', text: result }] };
+      return { content: [{ type: 'text', text: result.text }] };
     }
   );
 
@@ -131,7 +131,7 @@ function registerTools(server: McpServer, deps: ServerDependencies): void {
     {},
     async () => {
       const result = await listTours(client);
-      return { content: [{ type: 'text', text: result }] };
+      return { content: [{ type: 'text', text: result.text }] };
     }
   );
 
@@ -145,7 +145,7 @@ function registerTools(server: McpServer, deps: ServerDependencies): void {
     async ({ tourId }) => {
       const resolvedTourId = resolveTourId(tourId, config);
       const result = await getTourHotels(client, { tourId: resolvedTourId });
-      return { content: [{ type: 'text', text: result }] };
+      return { content: [{ type: 'text', text: result.text }] };
     }
   );
 
@@ -159,7 +159,7 @@ function registerTools(server: McpServer, deps: ServerDependencies): void {
     async ({ tourId }) => {
       const resolvedTourId = resolveTourId(tourId, config);
       const result = await getTourCrew(client, { tourId: resolvedTourId });
-      return { content: [{ type: 'text', text: result }] };
+      return { content: [{ type: 'text', text: result.text }] };
     }
   );
 
@@ -174,7 +174,7 @@ function registerTools(server: McpServer, deps: ServerDependencies): void {
     async ({ tourId, showsOnly }) => {
       const resolvedTourId = resolveTourId(tourId, config);
       const result = await getTourEvents(client, { tourId: resolvedTourId, showsOnly });
-      return { content: [{ type: 'text', text: result }] };
+      return { content: [{ type: 'text', text: result.text }] };
     }
   );
 
@@ -189,7 +189,7 @@ function registerTools(server: McpServer, deps: ServerDependencies): void {
     },
     async ({ query, tourId, limit }) => {
       const result = await searchPastVenues(client, { query, tourId, limit });
-      return { content: [{ type: 'text', text: result }] };
+      return { content: [{ type: 'text', text: result.text }] };
     }
   );
 
@@ -202,7 +202,7 @@ function registerTools(server: McpServer, deps: ServerDependencies): void {
     },
     async ({ venueId }) => {
       const result = await getVenueDetails(client, { venueId });
-      return { content: [{ type: 'text', text: result }] };
+      return { content: [{ type: 'text', text: result.text }] };
     }
   );
 
@@ -217,7 +217,7 @@ function registerTools(server: McpServer, deps: ServerDependencies): void {
     },
     async ({ tourId, limit, daysAhead }) => {
       const result = await getUpcomingShows(client, { tourId, limit, daysAhead });
-      return { content: [{ type: 'text', text: result }] };
+      return { content: [{ type: 'text', text: result.text }] };
     }
   );
 }

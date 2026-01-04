@@ -87,8 +87,8 @@ describe('deleteScheduleItem', () => {
         dayId: 'day123',
       });
 
-      expect(result).toContain('Item to Delete');
-      expect(result).toContain('deleted');
+      expect(result.text).toContain('Item to Delete');
+      expect(result.text).toContain('deleted');
     });
   });
 });

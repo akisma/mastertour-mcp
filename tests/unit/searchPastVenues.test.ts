@@ -83,40 +83,40 @@ describe('searchPastVenues', () => {
   it('should search venues by name', async () => {
     const result = await searchPastVenues(mockClient, { query: 'palladium' });
     
-    expect(result).toContain('Hollywood Palladium');
-    expect(result).toContain('Los Angeles');
-    expect(result).toContain('venue1');
-    expect(result).not.toContain('Stone Pony');
+    expect(result.text).toContain('Hollywood Palladium');
+    expect(result.text).toContain('Los Angeles');
+    expect(result.text).toContain('venue1');
+    expect(result.text).not.toContain('Stone Pony');
   });
 
   it('should search venues by city', async () => {
     const result = await searchPastVenues(mockClient, { query: 'los angeles' });
     
-    expect(result).toContain('Hollywood Palladium');
-    expect(result).toContain('The Fonda Theatre');
-    expect(result).not.toContain('Stone Pony');
+    expect(result.text).toContain('Hollywood Palladium');
+    expect(result.text).toContain('The Fonda Theatre');
+    expect(result.text).not.toContain('Stone Pony');
   });
 
   it('should search venues by state', async () => {
     const result = await searchPastVenues(mockClient, { query: 'NJ' });
     
-    expect(result).toContain('Stone Pony');
-    expect(result).toContain('Asbury Park');
-    expect(result).not.toContain('Palladium');
+    expect(result.text).toContain('Stone Pony');
+    expect(result.text).toContain('Asbury Park');
+    expect(result.text).not.toContain('Palladium');
   });
 
   it('should show no results message when no venues match', async () => {
     const result = await searchPastVenues(mockClient, { query: 'nonexistent venue' });
     
-    expect(result).toContain('No venues found');
-    expect(result).toContain('Tips:');
+    expect(result.text).toContain('No venues found');
+    expect(result.text).toContain('Tips:');
   });
 
   it('should limit results', async () => {
     const result = await searchPastVenues(mockClient, { query: 'los angeles', limit: 1 });
     
     // Should only contain one venue even though two match
-    const venueMatches = result.match(/🏟️/g);
+    const venueMatches = result.text.match(/🏟️/g);
     expect(venueMatches?.length).toBe(1);
   });
 
@@ -126,7 +126,7 @@ describe('searchPastVenues', () => {
     const result = await searchPastVenues(mockClient, { query: 'palladium', tourId: 'tour1' });
     
     expect(mockClient.listTours).not.toHaveBeenCalled();
-    expect(result).toContain('Hollywood Palladium');
+    expect(result.text).toContain('Hollywood Palladium');
   });
 
   it('should throw error for short query', async () => {
@@ -158,8 +158,8 @@ describe('searchPastVenues', () => {
     
     const result = await searchPastVenues(mockClient, { query: 'shared' });
     
-    expect(result).toContain('Shared Venue');
-    expect(result).toContain('Artist1 - Leg1');
-    expect(result).toContain('Artist2 - Leg2');
+    expect(result.text).toContain('Shared Venue');
+    expect(result.text).toContain('Artist1 - Leg1');
+    expect(result.text).toContain('Artist2 - Leg2');
   });
 });

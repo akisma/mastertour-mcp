@@ -8,22 +8,12 @@
 import type { MasterTourClient } from '../api/client.js';
 import { iterateTourDays, countAccessibleTours } from '../utils/tourIterator.js';
 import { formatDate, separator } from '../utils/formatters.js';
+import type { ToolResult, UpcomingShowsOutput, UpcomingShowOutput } from '../types/outputs.js';
 
 export interface GetUpcomingShowsParams {
   tourId?: string;
   limit?: number;
   daysAhead?: number;
-}
-
-interface UpcomingShow {
-  dayId: string;
-  tourLabel: string;
-  date: string;
-  dayType: string;
-  venueName: string;
-  city: string;
-  state: string;
-  country: string;
 }
 
 /**
@@ -32,7 +22,7 @@ interface UpcomingShow {
 export async function getUpcomingShows(
   client: MasterTourClient,
   params: GetUpcomingShowsParams
-): Promise<string> {
+): Promise<ToolResult<UpcomingShowsOutput>> {
   const { tourId, limit = 10, daysAhead } = params;
 
   const today = new Date();
@@ -42,7 +32,7 @@ export async function getUpcomingShows(
     ? new Date(today.getTime() + daysAhead * 24 * 60 * 60 * 1000)
     : null;
 
-  const upcomingShows: UpcomingShow[] = [];
+  const upcomingShows: UpcomingShowOutput[] = [];
   const tourCount = await countAccessibleTours(client, tourId);
 
   // Use iterator with show-day filtering
@@ -78,26 +68,44 @@ export async function getUpcomingShows(
   // Limit results
   const results = upcomingShows.slice(0, limit);
 
-  // Build output
+  // Build structured data
+  const data: UpcomingShowsOutput = {
+    shows: results,
+    totalFound: upcomingShows.length,
+    limit,
+    toursSearched: tourCount,
+  };
+
+  // Build formatted text
+  const text = formatUpcomingShows(data, tourId, daysAhead);
+
+  return { data, text };
+}
+
+function formatUpcomingShows(
+  data: UpcomingShowsOutput,
+  tourId?: string,
+  daysAhead?: number
+): string {
   const lines: string[] = [
     '🎤 Upcoming Shows',
     separator(),
     '',
   ];
 
-  if (results.length === 0) {
+  if (data.shows.length === 0) {
     if (tourId) {
       lines.push('ℹ️ No upcoming shows found for this tour.');
     } else {
       lines.push('ℹ️ No upcoming shows found across your tours.');
     }
     lines.push('');
-    lines.push(`📊 Searched ${tourCount} tour(s)`);
+    lines.push(`📊 Searched ${data.toursSearched} tour(s)`);
   } else {
     const showing =
-      upcomingShows.length > limit
-        ? `Showing next ${limit} of ${upcomingShows.length} shows`
-        : `${results.length} upcoming show(s)`;
+      data.totalFound > data.limit
+        ? `Showing next ${data.limit} of ${data.totalFound} shows`
+        : `${data.shows.length} upcoming show(s)`;
 
     if (daysAhead) {
       lines.push(`${showing} (within ${daysAhead} days):`);
@@ -106,7 +114,7 @@ export async function getUpcomingShows(
     }
     lines.push('');
 
-    for (const show of results) {
+    for (const show of data.shows) {
       lines.push(`📅 ${formatDate(show.date)}`);
       lines.push(`   🏟️ ${show.venueName}`);
       const location = [show.city, show.state, show.country].filter(Boolean).join(', ');
@@ -119,7 +127,7 @@ export async function getUpcomingShows(
     }
 
     lines.push(separator());
-    lines.push(`📊 Searched ${tourCount} tour(s)`);
+    lines.push(`📊 Searched ${data.toursSearched} tour(s)`);
     lines.push('');
     lines.push('💡 Use get_today_schedule with a specific date to see full day details.');
   }

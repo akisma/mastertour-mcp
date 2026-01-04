@@ -42,6 +42,13 @@ An MCP server enabling AI assistants to manage tour schedules, crew, hotels, ven
 - Phase 3: Reference Tools (tours, hotels, crew, events)
 - Phase 4: Venue Research (venue search, details, upcoming shows)
 
+**Architecture Refactoring Complete:**
+- Dependency injection pattern with singleton client
+- Centralized config module with fail-fast validation
+- Structured output types (`ToolResult<T>`) for all tools
+- Shared formatters and tour iterator utilities
+- 127 tests across 17 files, GitHub Actions CI
+
 ---
 
 ## 2. Goals & Non-Goals
@@ -50,10 +57,11 @@ An MCP server enabling AI assistants to manage tour schedules, crew, hotels, ven
 - ✅ Authenticate with Master Tour API using OAuth 1.0
 - ✅ Implement 12 MCP tools across 4 phases
 - ✅ Return formatted schedule data to AI assistant
-- ✅ Complete test coverage (100 tests passing)
+- ✅ Complete test coverage (127 tests passing)
 - ✅ Production-ready error handling
 - ✅ Clean, documented code
 - ✅ Confirm timezone handling via spike before deep build
+- ✅ Structured output types for programmatic access
 
 ### Non-Goals
 - ❌ MCP Resources or Prompts (not planned)
@@ -152,6 +160,7 @@ An MCP server enabling AI assistants to manage tour schedules, crew, hotels, ven
 | OAuth Auth (auth/oauth.ts) | Sign requests with OAuth 1.0 |
 | API Client (api/client.ts) | HTTP requests to Master Tour (axios) |
 | Tools (tools/*.ts) | MCP tool implementations |
+| Types (types/outputs.ts) | Structured output type definitions |
 | Formatters (utils/formatters.ts) | Shared output formatting |
 | Tour Iterator (utils/tourIterator.ts) | Async iteration over tours/days |
 
@@ -159,6 +168,9 @@ An MCP server enabling AI assistants to manage tour schedules, crew, hotels, ven
 
 ```
 mastertour-mcp/
+├── .github/
+│   └── workflows/
+│       └── ci.yml            # GitHub Actions CI (Node 20.x/22.x)
 ├── src/
 │   ├── index.ts              # MCP server entry point, tool registration
 │   ├── config.ts             # Environment config, fail-fast validation
@@ -166,6 +178,8 @@ mastertour-mcp/
 │   │   └── oauth.ts          # OAuth 1.0 signing
 │   ├── api/
 │   │   └── client.ts         # Master Tour HTTP client
+│   ├── types/
+│   │   └── outputs.ts        # Structured output types (ToolResult<T>)
 │   ├── tools/
 │   │   ├── getTodaySchedule.ts
 │   │   ├── addScheduleItem.ts
@@ -183,12 +197,12 @@ mastertour-mcp/
 │       ├── formatters.ts     # Shared formatting utilities
 │       └── tourIterator.ts   # Tour/day iteration helpers
 ├── tests/
-│   ├── unit/
+│   ├── unit/                 # 17 test files, 127 tests
 │   │   ├── auth.test.ts
 │   │   ├── config.test.ts
 │   │   ├── formatters.test.ts
 │   │   ├── client.test.ts
-│   │   └── getTodaySchedule.test.ts
+│   │   └── [tool].test.ts    # One test file per tool
 │   └── integration/
 │       └── getTodaySchedule.integration.test.ts
 ├── package.json

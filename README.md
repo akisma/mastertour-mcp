@@ -60,5 +60,12 @@ Add to `claude_desktop_config.json`:
 ## Development
 
 - `npm run build` - Compile TypeScript
-- `npm test` - Run tests (100 passing)
+- `npm test` - Run tests (127 passing across 17 files)
 - `npm run lint` - Lint code
+
+## Architecture
+
+- **Dependency Injection** - Single client instance, testable design
+- **Structured Outputs** - All tools return `{ data, text }` for programmatic and human consumption
+- **Shared Utilities** - Common formatters, tour iterators
+- **CI/CD** - GitHub Actions on PR/push with Node 20.x/22.x matrix

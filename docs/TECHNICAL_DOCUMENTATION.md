@@ -116,6 +116,32 @@ Consistent output formatting across tools:
 - `separator()` - Visual separators
 - `normalizeForSearch()` - Fuzzy search normalization
 
+### Structured Output Pattern
+
+All tools return a `ToolResult<T>` containing both structured data and human-readable text:
+
+```typescript
+// src/types/outputs.ts
+export interface ToolResult<T> {
+  data: T;      // Structured data for programmatic access
+  text: string; // Human-readable formatted text
+}
+
+// Example usage in tests:
+const result = await getTodaySchedule(client, { tourId: 'tour-123' });
+expect(result.data.dayId).toBe('day-abc');
+expect(result.text).toContain('Los Angeles');
+```
+
+**Output Types (`src/types/outputs.ts`):**
+- `DayScheduleOutput` - Schedule with items, timezone, location
+- `ScheduleMutationOutput` - CRUD operation results
+- `TourListOutput` - Tours grouped by organization
+- `UpcomingShowsOutput` - Shows with venue/date info
+- `VenueSearchOutput`, `VenueDetailsOutput` - Venue research results
+- `TourCrewOutput`, `TourHotelsOutput`, `TourEventsOutput` - Reference data
+- `DayNotesOutput` - Notes update results
+
 ### Timezone Handling (spike completed Jan 3, 2026)
 
 The API uses **naive datetime strings** in `YYYY-MM-DD HH:MM:SS` format with timezone context provided separately.
@@ -378,7 +404,7 @@ Get upcoming shows across all your tours, sorted by date.
 - 17 test files
 - 127 tests passing
 - All tools have dedicated test suites
-- New coverage: config module, formatters, DI patterns
+- Coverage: config module, formatters, DI patterns, structured outputs
 
 ### Running Tests
 ```bash
@@ -386,6 +412,12 @@ npm test           # Run all tests
 npm run build      # Compile TypeScript
 npm run lint       # Lint code
 ```
+
+### CI/CD
+GitHub Actions workflow (`.github/workflows/ci.yml`):
+- Runs on PR and push to main
+- Node.js matrix: 20.x, 22.x
+- Runs lint and tests
 
 ---
 
@@ -443,3 +475,6 @@ TEST_TOUR_ID=optional-tour-for-integration
 | Jan 4, 2026 | Phase 3 complete - added list_tours, get_tour_hotels, get_tour_crew, get_tour_events | - |
 | Jan 4, 2026 | Phase 4 complete - added venue research tools (search_past_venues, get_venue_details, get_upcoming_shows) | - |
 | Jan 4, 2026 | **Architecture refactor**: Singleton client with DI, config module, shared formatters, tour iterator utility | - |
+| Jan 4, 2026 | **Structured outputs**: All tools now return `ToolResult<T>` with typed data + formatted text | - |
+| Jan 4, 2026 | **CI/CD**: GitHub Actions workflow with Node 20.x/22.x matrix | - |
+| Jan 4, 2026 | **Tests**: 127 tests passing across 17 files | - |

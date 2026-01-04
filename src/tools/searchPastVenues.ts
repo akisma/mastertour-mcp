@@ -9,6 +9,7 @@
 import type { MasterTourClient, DayEvent } from '../api/client.js';
 import { iterateTourDays, getDayEventsSafe, countAccessibleTours } from '../utils/tourIterator.js';
 import { normalizeForSearch, separator } from '../utils/formatters.js';
+import type { ToolResult, VenueSearchOutput, VenueSearchResultOutput } from '../types/outputs.js';
 
 export interface SearchPastVenuesParams {
   query: string;
@@ -16,7 +17,7 @@ export interface SearchPastVenuesParams {
   limit?: number;
 }
 
-export interface VenueSearchResult {
+interface InternalVenueResult {
   venueId: string;
   name: string;
   city: string;
@@ -53,7 +54,7 @@ function matchesQuery(
 /**
  * Formats a venue result for display
  */
-function formatVenueResult(venue: VenueSearchResult, index: number): string[] {
+function formatVenueResult(venue: InternalVenueResult, index: number): string[] {
   const lines: string[] = [];
 
   lines.push(`${index + 1}. 🏟️ ${venue.name}`);
@@ -76,7 +77,7 @@ function formatVenueResult(venue: VenueSearchResult, index: number): string[] {
  * Adds or updates a venue in the map
  */
 function upsertVenue(
-  venueMap: Map<string, VenueSearchResult>,
+  venueMap: Map<string, InternalVenueResult>,
   event: DayEvent,
   tourLabel: string,
   dayDate: string
@@ -119,7 +120,7 @@ function upsertVenue(
 export async function searchPastVenues(
   client: MasterTourClient,
   params: SearchPastVenuesParams
-): Promise<string> {
+): Promise<ToolResult<VenueSearchOutput>> {
   const { query, tourId, limit = 10 } = params;
 
   if (!query || query.trim().length < 2) {
@@ -127,7 +128,7 @@ export async function searchPastVenues(
   }
 
   const tourCount = await countAccessibleTours(client, tourId);
-  const venueMap = new Map<string, VenueSearchResult>();
+  const venueMap = new Map<string, InternalVenueResult>();
 
   // Process days with venues using iterator
   for await (const ctx of iterateTourDays(client, { tourId, onlyDaysWithVenues: true })) {
@@ -154,25 +155,54 @@ export async function searchPastVenues(
   // Limit results
   const results = matchingVenues.slice(0, limit);
 
-  // Build output
+  // Build structured data
+  const outputResults: VenueSearchResultOutput[] = results.map((v) => ({
+    dayId: v.venueId, // Using venueId as dayId since we don't track specific days
+    tourLabel: v.tours.join(', '),
+    date: v.lastUsed,
+    venueName: v.name,
+    city: v.city,
+    state: v.state,
+    country: v.country,
+    matchedOn: query,
+  }));
+
+  const data: VenueSearchOutput = {
+    query,
+    results: outputResults,
+    totalFound: matchingVenues.length,
+    toursSearched: tourCount,
+  };
+
+  // Build formatted text
+  const text = formatSearchResults(data, results, allVenues.length);
+
+  return { data, text };
+}
+
+function formatSearchResults(
+  data: VenueSearchOutput,
+  results: InternalVenueResult[],
+  totalVenues: number
+): string {
   const lines: string[] = [
-    `🔍 Venue Search: "${query}"`,
+    `🔍 Venue Search: "${data.query}"`,
     separator(),
     '',
   ];
 
   if (results.length === 0) {
-    lines.push(`ℹ️ No venues found matching "${query}"`);
+    lines.push(`ℹ️ No venues found matching "${data.query}"`);
     lines.push('');
     lines.push('Tips:');
     lines.push('• Try searching by venue name (e.g., "palladium")');
     lines.push('• Try searching by city (e.g., "los angeles")');
     lines.push('• Try searching by state (e.g., "california" or "CA")');
     lines.push('');
-    lines.push(`📊 Searched ${tourCount} tour(s), found ${allVenues.length} total venues`);
+    lines.push(`📊 Searched ${data.toursSearched} tour(s), found ${totalVenues} total venues`);
   } else {
     lines.push(
-      `Found ${results.length} venue(s)${matchingVenues.length > limit ? ` (showing top ${limit})` : ''}:`
+      `Found ${results.length} venue(s)${data.totalFound > results.length ? ` (showing top ${results.length})` : ''}:`
     );
     lines.push('');
 
@@ -182,7 +212,7 @@ export async function searchPastVenues(
     }
 
     lines.push(separator());
-    lines.push(`📊 Searched ${tourCount} tour(s), found ${allVenues.length} total unique venues`);
+    lines.push(`📊 Searched ${data.toursSearched} tour(s), found ${totalVenues} total unique venues`);
     lines.push('');
     lines.push('💡 Use get_venue_details with a venue ID for full production specs, contacts, and facilities.');
   }

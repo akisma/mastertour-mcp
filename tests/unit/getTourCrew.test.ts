@@ -48,12 +48,12 @@ describe('getTourCrew', () => {
     const result = await getTourCrew(mockClient, { tourId: 'tour-123' });
 
     expect(mockClient.getTourCrew).toHaveBeenCalledWith('tour-123');
-    expect(result).toContain('Johnny'); // Uses preferred name
-    expect(result).toContain('Tour Manager');
-    expect(result).toContain('john@example.com');
-    expect(result).toContain('555-1234');
-    expect(result).toContain('Jane Smith'); // Falls back to first + last
-    expect(result).toContain('FOH Engineer');
+    expect(result.text).toContain('Johnny'); // Uses preferred name
+    expect(result.text).toContain('Tour Manager');
+    expect(result.text).toContain('john@example.com');
+    expect(result.text).toContain('555-1234');
+    expect(result.text).toContain('Jane Smith'); // Falls back to first + last
+    expect(result.text).toContain('FOH Engineer');
   });
 
   it('groups crew by title/role', async () => {
@@ -85,8 +85,8 @@ describe('getTourCrew', () => {
 
     const result = await getTourCrew(mockClient, { tourId: 'tour-123' });
 
-    expect(result).toContain('Musician');
-    expect(result).toContain('Tour Manager');
+    expect(result.text).toContain('Musician');
+    expect(result.text).toContain('Tour Manager');
   });
 
   it('returns message when no crew exists', async () => {
@@ -94,7 +94,7 @@ describe('getTourCrew', () => {
 
     const result = await getTourCrew(mockClient, { tourId: 'tour-123' });
 
-    expect(result).toContain('No crew members');
+    expect(result.text).toContain('No crew members');
   });
 
   it('throws error when no tour ID provided', async () => {

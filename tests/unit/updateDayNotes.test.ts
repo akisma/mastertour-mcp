@@ -129,8 +129,8 @@ describe('updateDayNotes', () => {
         generalNotes: 'Some notes',
       });
 
-      expect(result).toContain('Los Angeles');
-      expect(result).toContain('updated');
+      expect(result.text).toContain('Los Angeles');
+      expect(result.text).toContain('updated');
     });
   });
 });

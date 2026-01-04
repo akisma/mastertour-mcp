@@ -12,6 +12,7 @@
 import type { MasterTourClient, DayEvent } from '../api/client.js';
 import { iterateTourDays, getDayEventsSafe } from '../utils/tourIterator.js';
 import { formatField, formatContacts, separator } from '../utils/formatters.js';
+import type { ToolResult, VenueDetailsOutput, VenueContactOutput } from '../types/outputs.js';
 
 export interface GetVenueDetailsParams {
   venueId: string;
@@ -163,7 +164,7 @@ function formatLogistics(log: DayEvent['venueLogistics']): string[] {
 export async function getVenueDetails(
   client: MasterTourClient,
   params: GetVenueDetailsParams
-): Promise<string> {
+): Promise<ToolResult<VenueDetailsOutput | null>> {
   const { venueId } = params;
 
   if (!venueId) {
@@ -174,19 +175,68 @@ export async function getVenueDetails(
   const found = await findVenueEvent(client, venueId);
 
   if (!found) {
-    return [
-      '❌ Venue Not Found',
-      separator(),
-      '',
-      `Could not find venue with ID: ${venueId}`,
-      '',
-      'This venue may not exist in any of your accessible tours.',
-      'Use search_past_venues to find venues you have access to.',
-    ].join('\n');
+    return {
+      data: null,
+      text: [
+        '❌ Venue Not Found',
+        separator(),
+        '',
+        `Could not find venue with ID: ${venueId}`,
+        '',
+        'This venue may not exist in any of your accessible tours.',
+        'Use search_past_venues to find venues you have access to.',
+      ].join('\n'),
+    };
   }
 
   const { event: venueEvent, tourLabel: foundOnTour, dayDate: foundOnDate } = found;
 
+  // Build structured data
+  const contacts: VenueContactOutput[] = extractContacts(venueEvent.venueContacts);
+  
+  const data: VenueDetailsOutput = {
+    dayId: venueId, // Using venueId as identifier
+    venueName: venueEvent.venueName || '',
+    date: foundOnDate,
+    tourLabel: foundOnTour,
+    address: buildAddress(venueEvent),
+    city: venueEvent.venueCity || '',
+    state: venueEvent.venueState || '',
+    country: venueEvent.venueCountry || '',
+    capacity: venueEvent.venueCapacity ? parseInt(venueEvent.venueCapacity, 10) : undefined,
+    contacts,
+    notes: venueEvent.venueProduction?.riggingComments || undefined,
+  };
+
+  // Build formatted text
+  const text = formatVenueDetails(venueEvent, foundOnTour, foundOnDate);
+
+  return { data, text };
+}
+
+function extractContacts(venueContacts: unknown): VenueContactOutput[] {
+  if (!Array.isArray(venueContacts)) return [];
+  
+  return venueContacts
+    .filter((c): c is Record<string, string> => c && typeof c === 'object')
+    .map((c) => ({
+      name: `${c.firstName || ''} ${c.lastName || ''}`.trim() || 'Unknown',
+      title: c.title || undefined,
+      email: c.email || undefined,
+      phone: c.phone || c.cell || undefined,
+    }));
+}
+
+function buildAddress(event: DayEvent): string | undefined {
+  const parts = [
+    event.venueAddressLine1,
+    event.venueAddressLine2,
+    `${event.venueCity || ''}, ${event.venueState || ''} ${event.venueZip || ''}`.trim(),
+  ].filter(Boolean);
+  return parts.length > 0 ? parts.join(', ') : undefined;
+}
+
+function formatVenueDetails(venueEvent: DayEvent, foundOnTour: string, foundOnDate: string): string {
   // Build the detailed output
   const lines: string[] = [
     `🏟️ ${venueEvent.venueName}`,

@@ -164,8 +164,8 @@ describe('updateScheduleItem', () => {
         title: 'Updated Title',
       });
 
-      expect(result).toContain('Updated Title');
-      expect(result).toContain('updated');
+      expect(result.text).toContain('Updated Title');
+      expect(result.text).toContain('updated');
     });
   });
 });

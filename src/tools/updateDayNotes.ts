@@ -1,4 +1,5 @@
 import type { MasterTourClient } from '../api/client.js';
+import type { ToolResult, DayNotesOutput } from '../types/outputs.js';
 
 export interface UpdateDayNotesInput {
   dayId?: string;
@@ -10,7 +11,7 @@ export interface UpdateDayNotesInput {
 export async function updateDayNotes(
   client: MasterTourClient,
   input: UpdateDayNotesInput
-): Promise<string> {
+): Promise<ToolResult<DayNotesOutput>> {
   // Validate required fields
   if (!input.dayId) {
     throw new Error('dayId is required');
@@ -29,6 +30,13 @@ export async function updateDayNotes(
   const dayResponse = await client.getDay(input.dayId);
   const day = dayResponse.day;
 
+  // Capture previous notes for structured output
+  const previousNotes = [
+    day.generalNotes ? `General: ${day.generalNotes}` : '',
+    day.hotelNotes ? `Hotel: ${day.hotelNotes}` : '',
+    day.travelNotes ? `Travel: ${day.travelNotes}` : '',
+  ].filter(Boolean).join('\n');
+
   // Merge input with existing values
   const params = {
     generalNotes: input.generalNotes ?? (day.generalNotes as string) ?? '',
@@ -39,5 +47,22 @@ export async function updateDayNotes(
 
   await client.updateDayNotes(input.dayId, params);
 
-  return `📝 Notes updated for ${day.city}`;
+  // Build combined notes string
+  const newNotes = [
+    input.generalNotes ? `General: ${input.generalNotes}` : '',
+    input.hotelNotes ? `Hotel: ${input.hotelNotes}` : '',
+    input.travelNotes ? `Travel: ${input.travelNotes}` : '',
+  ].filter(Boolean).join('\n');
+
+  const data: DayNotesOutput = {
+    success: true,
+    dayId: input.dayId,
+    notes: newNotes || params.generalNotes || params.hotelNotes || params.travelNotes,
+    previousNotes: previousNotes || undefined,
+  };
+
+  return {
+    data,
+    text: `📝 Notes updated for ${day.city}`,
+  };
 }

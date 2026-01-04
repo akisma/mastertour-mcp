@@ -70,57 +70,57 @@ describe('getUpcomingShows', () => {
   it('should return upcoming shows sorted by date', async () => {
     const result = await getUpcomingShows(mockClient, {});
     
-    expect(result).toContain('Upcoming Shows');
-    expect(result).toContain('Hollywood Palladium');
-    expect(result).toContain('The Fonda Theatre');
-    expect(result).toContain('Soda Bar');
-    expect(result).toContain('Stone Pony');
+    expect(result.text).toContain('Upcoming Shows');
+    expect(result.text).toContain('Hollywood Palladium');
+    expect(result.text).toContain('The Fonda Theatre');
+    expect(result.text).toContain('Soda Bar');
+    expect(result.text).toContain('Stone Pony');
     
     // Should not include past shows
-    expect(result).not.toContain('Past Venue');
+    expect(result.text).not.toContain('Past Venue');
     // Should not include day off
-    expect(result).not.toContain('Day Off');
+    expect(result.text).not.toContain('Day Off');
   });
 
   it('should exclude past shows', async () => {
     const result = await getUpcomingShows(mockClient, {});
     
-    expect(result).not.toContain('Old City');
-    expect(result).not.toContain('day0');
+    expect(result.text).not.toContain('Old City');
+    expect(result.text).not.toContain('day0');
   });
 
   it('should limit results', async () => {
     const result = await getUpcomingShows(mockClient, { limit: 2 });
     
     // Should show first two shows by date
-    expect(result).toContain('Hollywood Palladium');
-    expect(result).toContain('Fonda');
-    expect(result).toContain('Showing next 2 of 4 shows');
+    expect(result.text).toContain('Hollywood Palladium');
+    expect(result.text).toContain('Fonda');
+    expect(result.text).toContain('Showing next 2 of 4 shows');
   });
 
   it('should filter by days ahead', async () => {
     const result = await getUpcomingShows(mockClient, { daysAhead: 5 });
     
     // Should only include shows within 5 days (Jan 3 + 5 = Jan 8)
-    expect(result).toContain('Hollywood Palladium');
-    expect(result).toContain('Fonda');
-    expect(result).not.toContain('Soda Bar'); // Jan 10, outside range
-    expect(result).not.toContain('Stone Pony'); // Feb 1
+    expect(result.text).toContain('Hollywood Palladium');
+    expect(result.text).toContain('Fonda');
+    expect(result.text).not.toContain('Soda Bar'); // Jan 10, outside range
+    expect(result.text).not.toContain('Stone Pony'); // Feb 1
   });
 
   it('should filter by specific tour', async () => {
     const result = await getUpcomingShows(mockClient, { tourId: 'tour1' });
     
     expect(mockClient.listTours).not.toHaveBeenCalled();
-    expect(result).toContain('Hollywood Palladium');
-    expect(result).not.toContain('Stone Pony');
+    expect(result.text).toContain('Hollywood Palladium');
+    expect(result.text).not.toContain('Stone Pony');
   });
 
   it('should show tour name when searching all tours', async () => {
     const result = await getUpcomingShows(mockClient, {});
     
-    expect(result).toContain('Artist1 - Leg1');
-    expect(result).toContain('Artist2 - Leg2');
+    expect(result.text).toContain('Artist1 - Leg1');
+    expect(result.text).toContain('Artist2 - Leg2');
   });
 
   it('should show no shows message when none found', async () => {
@@ -130,21 +130,21 @@ describe('getUpcomingShows', () => {
     
     const result = await getUpcomingShows(mockClient, {});
     
-    expect(result).toContain('No upcoming shows found');
+    expect(result.text).toContain('No upcoming shows found');
   });
 
   it('should include day IDs for follow-up queries', async () => {
     const result = await getUpcomingShows(mockClient, { limit: 3 });
     
-    expect(result).toContain('Day ID: day1');
-    expect(result).toContain('Day ID: day2');
+    expect(result.text).toContain('Day ID: day1');
+    expect(result.text).toContain('Day ID: day2');
   });
 
   it('should format dates in readable format', async () => {
     const result = await getUpcomingShows(mockClient, { limit: 1 });
     
     // Should have formatted date with weekday, month, day, year
-    expect(result).toMatch(/Jan.*2026/);
-    expect(result).toMatch(/(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/);
+    expect(result.text).toMatch(/Jan.*2026/);
+    expect(result.text).toMatch(/(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/);
   });
 });

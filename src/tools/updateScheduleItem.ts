@@ -1,5 +1,6 @@
 import { fromZonedTime, formatInTimeZone } from 'date-fns-tz';
 import type { MasterTourClient, ScheduleItem } from '../api/client.js';
+import type { ToolResult, ScheduleMutationOutput } from '../types/outputs.js';
 
 export interface UpdateScheduleItemInput {
   itemId?: string;
@@ -30,7 +31,7 @@ function extractTime(paulTime: string): string {
 export async function updateScheduleItem(
   client: MasterTourClient,
   input: UpdateScheduleItemInput
-): Promise<string> {
+): Promise<ToolResult<ScheduleMutationOutput>> {
   // Validate required fields
   if (!input.itemId) {
     throw new Error('itemId is required');
@@ -84,5 +85,17 @@ export async function updateScheduleItem(
     endDatetime,
   });
 
-  return `✅ "${title}" updated`;
+  const data: ScheduleMutationOutput = {
+    success: true,
+    itemId: input.itemId,
+    syncId: existingItem.syncId,
+    action: 'updated',
+    dayId: input.dayId,
+    title,
+  };
+
+  return {
+    data,
+    text: `✅ "${title}" updated`,
+  };
 }

@@ -51,10 +51,10 @@ describe('getTourHotels', () => {
     const result = await getTourHotels(mockClient, { tourId: 'tour-123' });
 
     expect(mockClient.getTourHotels).toHaveBeenCalledWith('tour-123');
-    expect(result).toContain('Test Band');
-    expect(result).toContain('Summer 2024');
-    expect(result).toContain('Hilton Times Square');
-    expect(result).toContain('New York');
+    expect(result.text).toContain('Test Band');
+    expect(result.text).toContain('Summer 2024');
+    expect(result.text).toContain('Hilton Times Square');
+    expect(result.text).toContain('New York');
   });
 
   it('shows hotel notes when no hotel objects exist', async () => {
@@ -80,8 +80,8 @@ describe('getTourHotels', () => {
 
     const result = await getTourHotels(mockClient, { tourId: 'tour-123' });
 
-    expect(result).toContain('Palmer House');
-    expect(result).toContain('Room block');
+    expect(result.text).toContain('Palmer House');
+    expect(result.text).toContain('Room block');
   });
 
   it('returns message when no hotel data exists', async () => {
@@ -107,7 +107,7 @@ describe('getTourHotels', () => {
 
     const result = await getTourHotels(mockClient, { tourId: 'tour-123' });
 
-    expect(result).toContain('No hotel information');
+    expect(result.text).toContain('No hotel information');
   });
 
   it('throws error when no tour ID provided', async () => {
