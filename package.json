@@ -20,7 +20,12 @@
     "type": "git",
     "url": "git+https://github.com/akisma/mastertour-mcp.git"
   },
-  "keywords": ["mcp", "mastertour", "eventric", "tour-management"],
+  "keywords": [
+    "mcp",
+    "mastertour",
+    "eventric",
+    "tour-management"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {
@@ -31,6 +36,7 @@
     "@modelcontextprotocol/sdk": "^1.25.1",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "oauth-1.0a": "^2.2.6",
     "zod": "^4.3.4"
   },

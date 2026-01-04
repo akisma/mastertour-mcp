@@ -53,13 +53,29 @@ We prove the full stack works before expanding functionality.
 - ✅ Clean, documented code
 - ✅ Confirm timezone handling via spike before deep build (COMPLETED)
 
-### Non-Goals (MVP)
-- ❌ Multiple tools (deferred to Phase 2)
-- ❌ Write operations to Master Tour
-- ❌ MCP Resources or Prompts
-- ❌ Multi-tour context switching (beyond default + override)
-- ❌ Caching layer
+### Non-Goals (MVP) - Now Goals for Phase 2/3
+- ✅ MVP complete - now expanding
+- ⬜ Write operations (Phase 2)
+- ⬜ Additional read tools (Phase 3)
+- ❌ MCP Resources or Prompts (not planned)
+- ❌ Caching layer (not planned)
 - ❌ Rate limiting (monitor, implement if needed)
+
+### Phase 2: Schedule Management (TM/PM Core Workflow)
+| Tool | Method | Purpose |
+|------|--------|--------|
+| `add_schedule_item` | POST | Add items to day schedule |
+| `update_schedule_item` | PUT | Modify existing schedule items |
+| `delete_schedule_item` | DELETE | Remove schedule items |
+| `update_day_notes` | PUT | Update general/travel/hotel notes |
+
+### Phase 3: Context/Reference Tools
+| Tool | Method | Purpose |
+|------|--------|--------|
+| `list_tours` | GET | Show all accessible tours |
+| `get_hotels` | GET | Hotel info for a day |
+| `get_crew` | GET | Crew/personnel for tour |
+| `get_events` | GET | Venue/event details for a day |
 
 ---
 
