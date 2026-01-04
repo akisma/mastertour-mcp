@@ -36,7 +36,7 @@ describe('searchPastVenues', () => {
     },
   };
 
-  const mockDayEvents: Record<string, any[]> = {
+  const mockDayEvents: Record<string, Array<Record<string, unknown>>> = {
     day1: [{
       venueId: 'venue1',
       venueName: 'Hollywood Palladium',

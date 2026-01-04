@@ -1,5 +1,5 @@
 import { fromZonedTime, formatInTimeZone } from 'date-fns-tz';
-import type { MasterTourClient, ScheduleItem } from '../api/client.js';
+import type { MasterTourClient } from '../api/client.js';
 import type { ToolResult, ScheduleMutationOutput } from '../types/outputs.js';
 
 export interface UpdateScheduleItemInput {
