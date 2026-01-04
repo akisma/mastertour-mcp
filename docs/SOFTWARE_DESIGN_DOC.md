@@ -147,27 +147,46 @@ An MCP server enabling AI assistants to manage tour schedules, crew, hotels, ven
 
 | Component | Responsibility |
 |-----------|----------------|
-| MCP Server (index.ts) | Entry point, transport setup, tool registration |
-| OAuth Auth (auth.ts) | Sign requests with OAuth 1.0 |
+| MCP Server (index.ts) | Entry point, transport setup, tool registration, DI container |
+| Config (config.ts) | Environment validation, configuration management |
+| OAuth Auth (auth/oauth.ts) | Sign requests with OAuth 1.0 |
 | API Client (api/client.ts) | HTTP requests to Master Tour (axios) |
 | Tools (tools/*.ts) | MCP tool implementations |
+| Formatters (utils/formatters.ts) | Shared output formatting |
+| Tour Iterator (utils/tourIterator.ts) | Async iteration over tours/days |
 
 ### Project Structure
 
 ```
 mastertour-mcp/
 ├── src/
-│   ├── index.ts              # MCP server entry point
-│   ├── auth.ts               # OAuth 1.0 signing
+│   ├── index.ts              # MCP server entry point, tool registration
+│   ├── config.ts             # Environment config, fail-fast validation
+│   ├── auth/
+│   │   └── oauth.ts          # OAuth 1.0 signing
 │   ├── api/
 │   │   └── client.ts         # Master Tour HTTP client
 │   ├── tools/
-│   │   └── getTodaySchedule.ts
-│   └── types/
-│       └── mastertour.ts     # Type definitions
+│   │   ├── getTodaySchedule.ts
+│   │   ├── addScheduleItem.ts
+│   │   ├── updateScheduleItem.ts
+│   │   ├── deleteScheduleItem.ts
+│   │   ├── updateDayNotes.ts
+│   │   ├── listTours.ts
+│   │   ├── getTourHotels.ts
+│   │   ├── getTourCrew.ts
+│   │   ├── getTourEvents.ts
+│   │   ├── searchPastVenues.ts
+│   │   ├── getVenueDetails.ts
+│   │   └── getUpcomingShows.ts
+│   └── utils/
+│       ├── formatters.ts     # Shared formatting utilities
+│       └── tourIterator.ts   # Tour/day iteration helpers
 ├── tests/
 │   ├── unit/
 │   │   ├── auth.test.ts
+│   │   ├── config.test.ts
+│   │   ├── formatters.test.ts
 │   │   ├── client.test.ts
 │   │   └── getTodaySchedule.test.ts
 │   └── integration/
@@ -182,28 +201,94 @@ mastertour-mcp/
 
 ## 5. Detailed Design
 
-### 5.1 MCP Server Initialization
+### 5.1 Dependency Injection Pattern
+
+The server uses dependency injection for testability and single-client initialization:
 
 ```typescript
-// src/index.ts - Conceptual design
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { registerGetTodaySchedule } from './tools/getTodaySchedule.js';
+// src/index.ts
+export interface ServerDependencies {
+  client: MasterTourClient;
+  config: Config;
+}
 
-const server = new McpServer({
-  name: 'mastertour',
-  version: '1.0.0',
-});
+// Create server with injected dependencies (for testing)
+export function createServer(deps?: ServerDependencies): McpServer {
+  const { client, config } = deps ?? createDefaultDependencies();
+  
+  const server = new McpServer({
+    name: 'mastertour',
+    version: '1.0.0',
+  });
+  
+  registerTools(server, client, config);
+  return server;
+}
 
-// Register tools
-registerGetTodaySchedule(server);
-
-// Connect via stdio
-const transport = new StdioServerTransport();
-await server.connect(transport);
+// Production: creates real dependencies
+function createDefaultDependencies(): ServerDependencies {
+  const config = loadConfig();
+  const oauth = createOAuthClientFromConfig(config);
+  const client = createMasterTourClient(oauth);
+  return { client, config };
+}
 ```
 
-### 5.2 OAuth 1.0 Authentication
+**Benefits:**
+- Single client instance shared across all tools
+- Configuration validated once at startup
+- Tests can inject mocks without environment manipulation
+- Clear separation between wiring and business logic
+
+### 5.2 Configuration Management
+
+```typescript
+// src/config.ts
+export interface Config {
+  oauth: {
+    consumerKey: string;
+    consumerSecret: string;
+    accessToken: string;
+    tokenSecret: string;
+  };
+  defaultTourId?: number;
+}
+
+export function loadConfig(): Config {
+  // Validates all required env vars, throws descriptive errors
+  // Called once at startup for fail-fast behavior
+}
+
+export function resolveTourId(config: Config, providedTourId?: number): number {
+  // Returns providedTourId if set, else config.defaultTourId
+  // Throws if neither available
+}
+```
+
+### 5.3 Shared Utilities
+
+**Tour Iterator (`utils/tourIterator.ts`):**
+```typescript
+// Async generator for iterating through tours and days
+export async function* iterateTourDays(
+  client: MasterTourClient,
+  tourIds?: number[]
+): AsyncGenerator<{ tour: Tour; day: TourDay; events: TourEvent[] }> {
+  // Handles multi-tour iteration with proper error handling
+}
+```
+
+**Formatters (`utils/formatters.ts`):**
+```typescript
+export function formatDate(date: string | null | undefined, format?: string): string;
+export function formatField(label: string, value: unknown): string;
+export function separator(char?: string, length?: number): string;
+export function formatLocation(location: object): string;
+export function formatContacts(contacts: unknown[]): string;
+export function normalizeForSearch(text: string | null | undefined): string;
+```
+
+### 5.4 OAuth 1.0 Authentication
 
 **Signing Flow:**
 1. Collect request parameters (method, URL, params)
@@ -214,7 +299,7 @@ await server.connect(transport);
 
 **Design Decision:** Use `oauth-1.0a` npm package for signing logic.
 
-### 5.3 API Client
+### 5.5 API Client
 
 **Responsibilities:**
 - Build request URLs with required `version=7` param
@@ -229,7 +314,7 @@ await server.connect(transport);
 - Default tour: optional env `MASTERTOUR_DEFAULT_TOUR_ID` with tool override
 - Tours listing: `GET /api/v5/tours` available for future selection UX
 
-### 5.4 get_today_schedule Tool
+### 5.6 get_today_schedule Tool
 
 **Flow:**
 ```
@@ -654,3 +739,4 @@ Full API docs: `https://my.eventric.com/portal/apidocs`
 | 0.2 | Jan 3, 2026 | Timezone spike complete, Phase 0 complete, corrected base URL | Engineering Team |
 | 0.3 | Jan 2026 | Phase 1-3 complete (9 tools, 73 tests) | Engineering Team |
 | 1.0 | Jan 2026 | Phase 4 complete (12 tools, 100 tests) - venue research tools | Engineering Team |
+| 1.1 | Jan 2026 | Architecture refactoring: DI pattern, config module, shared formatters, tour iterator (127 tests) | Engineering Team |

@@ -97,27 +97,9 @@ describe('getTourCrew', () => {
     expect(result).toContain('No crew members');
   });
 
-  it('uses default tour ID from environment', async () => {
-    const originalEnv = process.env.MASTERTOUR_DEFAULT_TOUR_ID;
-    process.env.MASTERTOUR_DEFAULT_TOUR_ID = 'default-tour';
-
-    (mockClient.getTourCrew as ReturnType<typeof vi.fn>).mockResolvedValue([]);
-
-    await getTourCrew(mockClient, {});
-
-    expect(mockClient.getTourCrew).toHaveBeenCalledWith('default-tour');
-
-    process.env.MASTERTOUR_DEFAULT_TOUR_ID = originalEnv;
-  });
-
-  it('throws error when no tour ID provided and no default set', async () => {
-    const originalEnv = process.env.MASTERTOUR_DEFAULT_TOUR_ID;
-    delete process.env.MASTERTOUR_DEFAULT_TOUR_ID;
-
+  it('throws error when no tour ID provided', async () => {
     await expect(getTourCrew(mockClient, {})).rejects.toThrow(
       'Tour ID is required'
     );
-
-    process.env.MASTERTOUR_DEFAULT_TOUR_ID = originalEnv;
   });
 });

@@ -39,13 +39,14 @@ function formatCrewMember(member: CrewMember): string[] {
 }
 
 /**
- * Gets tour crew information
+ * Gets tour crew information.
+ * Caller should resolve tourId from config if not provided.
  */
 export async function getTourCrew(
   client: MasterTourClient,
   params: GetTourCrewParams
 ): Promise<string> {
-  const tourId = params.tourId || process.env.MASTERTOUR_DEFAULT_TOUR_ID;
+  const { tourId } = params;
 
   if (!tourId) {
     throw new Error(

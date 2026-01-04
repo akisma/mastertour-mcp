@@ -53,13 +53,14 @@ function formatDayHotels(day: HotelDayInfo): string[] {
 }
 
 /**
- * Gets hotel information for a tour
+ * Gets hotel information for a tour.
+ * Caller should resolve tourId from config if not provided.
  */
 export async function getTourHotels(
   client: MasterTourClient,
   params: GetTourHotelsParams
 ): Promise<string> {
-  const tourId = params.tourId || process.env.MASTERTOUR_DEFAULT_TOUR_ID;
+  const { tourId } = params;
 
   if (!tourId) {
     throw new Error(

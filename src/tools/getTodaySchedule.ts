@@ -10,8 +10,8 @@ export async function getTodaySchedule(
   client: MasterTourClient,
   input: GetTodayScheduleInput
 ): Promise<string> {
-  // Resolve tour ID
-  const tourId = input.tourId || process.env.MASTERTOUR_DEFAULT_TOUR_ID;
+  // Resolve tour ID (caller should provide from config if not in input)
+  const tourId = input.tourId;
   if (!tourId) {
     throw new Error('tourId is required. Provide it as input or set MASTERTOUR_DEFAULT_TOUR_ID environment variable.');
   }

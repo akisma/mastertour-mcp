@@ -10,8 +10,9 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { createOAuthClient } from './auth/oauth.js';
-import { createMasterTourClient } from './api/client.js';
+import { loadConfig, resolveTourId, type Config } from './config.js';
+import { createOAuthClientFromConfig } from './auth/oauth.js';
+import { createMasterTourClient, type MasterTourClient } from './api/client.js';
 import { getTodaySchedule } from './tools/getTodaySchedule.js';
 import { addScheduleItem } from './tools/addScheduleItem.js';
 import { updateScheduleItem } from './tools/updateScheduleItem.js';
@@ -26,16 +27,22 @@ import { getVenueDetails } from './tools/getVenueDetails.js';
 import { getUpcomingShows } from './tools/getUpcomingShows.js';
 
 /**
- * Creates and configures the MCP server instance.
- * Exported for testing purposes.
+ * Dependencies for the MCP server.
+ * Allows injection for testing.
  */
-export function createServer(): McpServer {
-  const server = new McpServer({
-    name: 'mastertour',
-    version: '1.0.0',
-  });
+export interface ServerDependencies {
+  client: MasterTourClient;
+  config: Config;
+}
 
-  // Register get_today_schedule tool
+/**
+ * Registers all MCP tools with the server.
+ * Tools receive the client via closure, avoiding per-request instantiation.
+ */
+function registerTools(server: McpServer, deps: ServerDependencies): void {
+  const { client, config } = deps;
+
+  // Tool: get_today_schedule
   server.tool(
     'get_today_schedule',
     "Get today's tour schedule including itinerary, events, and times",
@@ -44,18 +51,15 @@ export function createServer(): McpServer {
       date: z.string().optional().describe('Date in YYYY-MM-DD format (defaults to today)'),
     },
     async ({ tourId, date }) => {
-      const oauth = createOAuthClient();
-      const client = createMasterTourClient(oauth);
-      
-      const result = await getTodaySchedule(client, { tourId, date });
-      
-      return {
-        content: [{ type: 'text', text: result }],
-      };
+      const result = await getTodaySchedule(client, {
+        tourId: tourId || config.defaultTourId,
+        date,
+      });
+      return { content: [{ type: 'text', text: result }] };
     }
   );
 
-  // Register add_schedule_item tool
+  // Tool: add_schedule_item
   server.tool(
     'add_schedule_item',
     'Add a new item to a day\'s schedule (e.g., meetings, soundcheck, lobby call)',
@@ -67,14 +71,8 @@ export function createServer(): McpServer {
       details: z.string().optional().describe('Additional details or notes'),
     },
     async ({ dayId, title, startTime, endTime, details }) => {
-      const oauth = createOAuthClient();
-      const client = createMasterTourClient(oauth);
-      
       const result = await addScheduleItem(client, { dayId, title, startTime, endTime, details });
-      
-      return {
-        content: [{ type: 'text', text: result }],
-      };
+      return { content: [{ type: 'text', text: result }] };
     }
   );
 
@@ -91,14 +89,8 @@ export function createServer(): McpServer {
       details: z.string().optional().describe('New details/notes'),
     },
     async ({ itemId, dayId, title, startTime, endTime, details }) => {
-      const oauth = createOAuthClient();
-      const client = createMasterTourClient(oauth);
-      
       const result = await updateScheduleItem(client, { itemId, dayId, title, startTime, endTime, details });
-      
-      return {
-        content: [{ type: 'text', text: result }],
-      };
+      return { content: [{ type: 'text', text: result }] };
     }
   );
 
@@ -111,14 +103,8 @@ export function createServer(): McpServer {
       dayId: z.string().describe('The day ID containing the schedule item'),
     },
     async ({ itemId, dayId }) => {
-      const oauth = createOAuthClient();
-      const client = createMasterTourClient(oauth);
-      
       const result = await deleteScheduleItem(client, { itemId, dayId });
-      
-      return {
-        content: [{ type: 'text', text: result }],
-      };
+      return { content: [{ type: 'text', text: result }] };
     }
   );
 
@@ -133,14 +119,8 @@ export function createServer(): McpServer {
       travelNotes: z.string().optional().describe('Travel-related notes'),
     },
     async ({ dayId, generalNotes, hotelNotes, travelNotes }) => {
-      const oauth = createOAuthClient();
-      const client = createMasterTourClient(oauth);
-      
       const result = await updateDayNotes(client, { dayId, generalNotes, hotelNotes, travelNotes });
-      
-      return {
-        content: [{ type: 'text', text: result }],
-      };
+      return { content: [{ type: 'text', text: result }] };
     }
   );
 
@@ -150,14 +130,8 @@ export function createServer(): McpServer {
     'List all tours you have access to, including tour IDs and permission levels',
     {},
     async () => {
-      const oauth = createOAuthClient();
-      const client = createMasterTourClient(oauth);
-      
       const result = await listTours(client);
-      
-      return {
-        content: [{ type: 'text', text: result }],
-      };
+      return { content: [{ type: 'text', text: result }] };
     }
   );
 
@@ -169,14 +143,9 @@ export function createServer(): McpServer {
       tourId: z.string().optional().describe('Tour ID (optional if MASTERTOUR_DEFAULT_TOUR_ID is set)'),
     },
     async ({ tourId }) => {
-      const oauth = createOAuthClient();
-      const client = createMasterTourClient(oauth);
-      
-      const result = await getTourHotels(client, { tourId });
-      
-      return {
-        content: [{ type: 'text', text: result }],
-      };
+      const resolvedTourId = resolveTourId(tourId, config);
+      const result = await getTourHotels(client, { tourId: resolvedTourId });
+      return { content: [{ type: 'text', text: result }] };
     }
   );
 
@@ -188,14 +157,9 @@ export function createServer(): McpServer {
       tourId: z.string().optional().describe('Tour ID (optional if MASTERTOUR_DEFAULT_TOUR_ID is set)'),
     },
     async ({ tourId }) => {
-      const oauth = createOAuthClient();
-      const client = createMasterTourClient(oauth);
-      
-      const result = await getTourCrew(client, { tourId });
-      
-      return {
-        content: [{ type: 'text', text: result }],
-      };
+      const resolvedTourId = resolveTourId(tourId, config);
+      const result = await getTourCrew(client, { tourId: resolvedTourId });
+      return { content: [{ type: 'text', text: result }] };
     }
   );
 
@@ -208,14 +172,9 @@ export function createServer(): McpServer {
       showsOnly: z.boolean().optional().describe('If true, only show "Show Day" events (excludes travel days, days off)'),
     },
     async ({ tourId, showsOnly }) => {
-      const oauth = createOAuthClient();
-      const client = createMasterTourClient(oauth);
-      
-      const result = await getTourEvents(client, { tourId, showsOnly });
-      
-      return {
-        content: [{ type: 'text', text: result }],
-      };
+      const resolvedTourId = resolveTourId(tourId, config);
+      const result = await getTourEvents(client, { tourId: resolvedTourId, showsOnly });
+      return { content: [{ type: 'text', text: result }] };
     }
   );
 
@@ -229,14 +188,8 @@ export function createServer(): McpServer {
       limit: z.number().optional().describe('Maximum results to return (default 10)'),
     },
     async ({ query, tourId, limit }) => {
-      const oauth = createOAuthClient();
-      const client = createMasterTourClient(oauth);
-      
       const result = await searchPastVenues(client, { query, tourId, limit });
-      
-      return {
-        content: [{ type: 'text', text: result }],
-      };
+      return { content: [{ type: 'text', text: result }] };
     }
   );
 
@@ -248,14 +201,8 @@ export function createServer(): McpServer {
       venueId: z.string().describe('The venue ID (from search_past_venues or other tools)'),
     },
     async ({ venueId }) => {
-      const oauth = createOAuthClient();
-      const client = createMasterTourClient(oauth);
-      
       const result = await getVenueDetails(client, { venueId });
-      
-      return {
-        content: [{ type: 'text', text: result }],
-      };
+      return { content: [{ type: 'text', text: result }] };
     }
   );
 
@@ -269,18 +216,37 @@ export function createServer(): McpServer {
       daysAhead: z.number().optional().describe('Only show performances within N days from today'),
     },
     async ({ tourId, limit, daysAhead }) => {
-      const oauth = createOAuthClient();
-      const client = createMasterTourClient(oauth);
-      
       const result = await getUpcomingShows(client, { tourId, limit, daysAhead });
-      
-      return {
-        content: [{ type: 'text', text: result }],
-      };
+      return { content: [{ type: 'text', text: result }] };
     }
   );
+}
+
+/**
+ * Creates and configures the MCP server instance.
+ * Accepts optional dependencies for testing.
+ */
+export function createServer(deps?: ServerDependencies): McpServer {
+  const server = new McpServer({
+    name: 'mastertour',
+    version: '1.0.0',
+  });
+
+  // Use provided dependencies or create from config
+  const dependencies = deps ?? createDefaultDependencies();
+  registerTools(server, dependencies);
 
   return server;
+}
+
+/**
+ * Creates default dependencies from environment configuration.
+ */
+function createDefaultDependencies(): ServerDependencies {
+  const config = loadConfig();
+  const oauth = createOAuthClientFromConfig(config);
+  const client = createMasterTourClient(oauth);
+  return { client, config };
 }
 
 /**

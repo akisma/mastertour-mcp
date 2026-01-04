@@ -110,32 +110,9 @@ describe('getTourHotels', () => {
     expect(result).toContain('No hotel information');
   });
 
-  it('uses default tour ID from environment', async () => {
-    const originalEnv = process.env.MASTERTOUR_DEFAULT_TOUR_ID;
-    process.env.MASTERTOUR_DEFAULT_TOUR_ID = 'default-tour';
-
-    const mockData = {
-      tour: { artistName: 'Band', legName: 'Tour' },
-      days: [],
-    };
-
-    (mockClient.getTourHotels as ReturnType<typeof vi.fn>).mockResolvedValue(mockData);
-
-    await getTourHotels(mockClient, {});
-
-    expect(mockClient.getTourHotels).toHaveBeenCalledWith('default-tour');
-
-    process.env.MASTERTOUR_DEFAULT_TOUR_ID = originalEnv;
-  });
-
-  it('throws error when no tour ID provided and no default set', async () => {
-    const originalEnv = process.env.MASTERTOUR_DEFAULT_TOUR_ID;
-    delete process.env.MASTERTOUR_DEFAULT_TOUR_ID;
-
+  it('throws error when no tour ID provided', async () => {
     await expect(getTourHotels(mockClient, {})).rejects.toThrow(
       'Tour ID is required'
     );
-
-    process.env.MASTERTOUR_DEFAULT_TOUR_ID = originalEnv;
   });
 });

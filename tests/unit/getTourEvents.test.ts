@@ -142,32 +142,9 @@ describe('getTourEvents', () => {
     expect(result).toContain('No events found');
   });
 
-  it('uses default tour ID from environment', async () => {
-    const originalEnv = process.env.MASTERTOUR_DEFAULT_TOUR_ID;
-    process.env.MASTERTOUR_DEFAULT_TOUR_ID = 'default-tour';
-
-    const mockData = {
-      tour: { artistName: 'Band', legName: 'Tour' },
-      days: [],
-    };
-
-    (mockClient.getTourEvents as ReturnType<typeof vi.fn>).mockResolvedValue(mockData);
-
-    await getTourEvents(mockClient, {});
-
-    expect(mockClient.getTourEvents).toHaveBeenCalledWith('default-tour');
-
-    process.env.MASTERTOUR_DEFAULT_TOUR_ID = originalEnv;
-  });
-
-  it('throws error when no tour ID provided and no default set', async () => {
-    const originalEnv = process.env.MASTERTOUR_DEFAULT_TOUR_ID;
-    delete process.env.MASTERTOUR_DEFAULT_TOUR_ID;
-
+  it('throws error when no tour ID provided', async () => {
     await expect(getTourEvents(mockClient, {})).rejects.toThrow(
       'Tour ID is required'
     );
-
-    process.env.MASTERTOUR_DEFAULT_TOUR_ID = originalEnv;
   });
 });

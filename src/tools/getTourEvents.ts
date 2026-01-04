@@ -57,13 +57,14 @@ function formatEventDay(day: EventDayInfo): string[] {
 }
 
 /**
- * Gets tour events/dates
+ * Gets tour events/dates.
+ * Caller should resolve tourId from config if not provided.
  */
 export async function getTourEvents(
   client: MasterTourClient,
   params: GetTourEventsParams
 ): Promise<string> {
-  const tourId = params.tourId || process.env.MASTERTOUR_DEFAULT_TOUR_ID;
+  const { tourId } = params;
 
   if (!tourId) {
     throw new Error(

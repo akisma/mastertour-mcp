@@ -41,8 +41,6 @@ An MCP (Model Context Protocol) server that enables AI assistants to interact wi
 
 ## Architecture
 
-*To be completed after SOFTWARE_DESIGN_DOC.md is finalized*
-
 ### High-Level Components
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
@@ -51,8 +49,72 @@ An MCP (Model Context Protocol) server that enables AI assistants to interact wi
 └─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
 
-### Component Details
-*To be added as implementation progresses*
+### Project Structure
+```
+src/
+├── index.ts              # MCP server entry, tool registration
+├── config.ts             # Environment config, validation
+├── api/
+│   └── client.ts         # Master Tour HTTP client
+├── auth/
+│   └── oauth.ts          # OAuth 1.0 signing
+├── tools/
+│   ├── getTodaySchedule.ts
+│   ├── addScheduleItem.ts
+│   ├── updateScheduleItem.ts
+│   ├── deleteScheduleItem.ts
+│   ├── updateDayNotes.ts
+│   ├── listTours.ts
+│   ├── getTourHotels.ts
+│   ├── getTourCrew.ts
+│   ├── getTourEvents.ts
+│   ├── searchPastVenues.ts
+│   ├── getVenueDetails.ts
+│   └── getUpcomingShows.ts
+└── utils/
+    ├── formatters.ts     # Shared output formatting
+    └── tourIterator.ts   # Tour/day iteration utilities
+```
+
+### Dependency Injection Pattern
+The server uses dependency injection for testability:
+
+```typescript
+// index.ts
+export interface ServerDependencies {
+  client: MasterTourClient;
+  config: Config;
+}
+
+export function createServer(deps?: ServerDependencies): McpServer {
+  const dependencies = deps ?? createDefaultDependencies();
+  registerTools(server, dependencies);
+  return server;
+}
+```
+
+**Benefits:**
+- Single client instance shared across all tools
+- Config resolved once at startup (fail-fast validation)
+- Easy to inject mock dependencies for testing
+
+### Shared Utilities
+
+**Tour Iterator (`utils/tourIterator.ts`)**
+Async generator for iterating over tours and days, used by venue research tools:
+```typescript
+for await (const ctx of iterateTourDays(client, { onlyShowDays: true })) {
+  // ctx contains tour, tourData, tourLabel, day
+}
+```
+
+**Formatters (`utils/formatters.ts`)**
+Consistent output formatting across tools:
+- `formatDate()` - Human-readable dates
+- `formatField()` - Label-value pairs with HTML entity decoding
+- `formatContacts()` - Contact info with phone/fax icons
+- `separator()` - Visual separators
+- `normalizeForSearch()` - Fuzzy search normalization
 
 ### Timezone Handling (spike completed Jan 3, 2026)
 
@@ -313,9 +375,10 @@ Get upcoming shows across all your tours, sorted by date.
 - **Integration Tests:** Real Master Tour account, test actual API calls
 
 ### Test Coverage
-- 15 test files
-- 100 tests passing
+- 17 test files
+- 127 tests passing
 - All tools have dedicated test suites
+- New coverage: config module, formatters, DI patterns
 
 ### Running Tests
 ```bash
@@ -378,3 +441,5 @@ TEST_TOUR_ID=optional-tour-for-integration
 | Jan 3, 2026 | Timezone spike completed - documented dual time fields (UTC + local), corrected base URL | - |
 | Jan 4, 2026 | Phase 2 complete - added schedule CRUD tools with timezone handling | - |
 | Jan 4, 2026 | Phase 3 complete - added list_tours, get_tour_hotels, get_tour_crew, get_tour_events | - |
+| Jan 4, 2026 | Phase 4 complete - added venue research tools (search_past_venues, get_venue_details, get_upcoming_shows) | - |
+| Jan 4, 2026 | **Architecture refactor**: Singleton client with DI, config module, shared formatters, tour iterator utility | - |

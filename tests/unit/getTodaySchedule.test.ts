@@ -19,6 +19,7 @@ describe('getTodaySchedule', () => {
       scheduleItems: [
         {
           id: 'item1',
+          syncId: 'sync1',
           title: 'venue access',
           startDatetime: '2026-02-06 20:00:00',
           paulStartTime: '2026-02-06 12:00:00',
@@ -28,6 +29,7 @@ describe('getTodaySchedule', () => {
         },
         {
           id: 'item2',
+          syncId: 'sync2',
           title: 'DOORS',
           startDatetime: '2026-02-07 02:30:00',
           paulStartTime: '2026-02-06 18:30:00',
@@ -39,10 +41,10 @@ describe('getTodaySchedule', () => {
     },
   };
 
-  const mockClient: MasterTourClient = {
+  const mockClient = {
     getDay: vi.fn().mockResolvedValue(mockDayResponse),
     getTourSummary: vi.fn().mockResolvedValue([{ id: 'day123' }]),
-  };
+  } as unknown as MasterTourClient;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -60,17 +62,7 @@ describe('getTodaySchedule', () => {
       expect(mockClient.getTourSummary).toHaveBeenCalledWith('input-tour-id', '2026-02-06');
     });
 
-    it('falls back to MASTERTOUR_DEFAULT_TOUR_ID env var', async () => {
-      process.env.MASTERTOUR_DEFAULT_TOUR_ID = 'env-tour-id';
-
-      await getTodaySchedule(mockClient, { date: '2026-02-06' });
-
-      expect(mockClient.getTourSummary).toHaveBeenCalledWith('env-tour-id', '2026-02-06');
-    });
-
     it('throws error if no tourId available', async () => {
-      delete process.env.MASTERTOUR_DEFAULT_TOUR_ID;
-
       await expect(getTodaySchedule(mockClient, { date: '2026-02-06' }))
         .rejects.toThrow('tourId');
     });
@@ -78,22 +70,19 @@ describe('getTodaySchedule', () => {
 
   describe('date handling', () => {
     it('uses provided date', async () => {
-      process.env.MASTERTOUR_DEFAULT_TOUR_ID = 'tour123';
-
-      await getTodaySchedule(mockClient, { date: '2026-02-15' });
+      await getTodaySchedule(mockClient, { tourId: 'tour123', date: '2026-02-15' });
 
       expect(mockClient.getTourSummary).toHaveBeenCalledWith('tour123', '2026-02-15');
     });
 
     it('defaults to today if no date provided', async () => {
-      process.env.MASTERTOUR_DEFAULT_TOUR_ID = 'tour123';
       const today = new Date().toISOString().split('T')[0];
 
-      await getTodaySchedule(mockClient, {});
+      await getTodaySchedule(mockClient, { tourId: 'tour123' });
 
       expect(mockClient.getTourSummary).toHaveBeenCalledWith('tour123', today);
     });
-  });
+  });;
 });
 
 describe('formatSchedule', () => {
@@ -111,6 +100,7 @@ describe('formatSchedule', () => {
       scheduleItems: [
         {
           id: 'item1',
+          syncId: 'sync1',
           title: 'venue access',
           startDatetime: '2026-02-06 20:00:00',
           paulStartTime: '2026-02-06 12:00:00',

@@ -10,5 +10,8 @@ export default defineConfig({
       exclude: ['src/index.ts'], // Entry point - tested via integration
     },
     environment: 'node',
+    typecheck: {
+      tsconfig: './tsconfig.test.json',
+    },
   },
 });
