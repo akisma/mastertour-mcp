@@ -18,6 +18,9 @@ import { updateScheduleItem } from './tools/updateScheduleItem.js';
 import { deleteScheduleItem } from './tools/deleteScheduleItem.js';
 import { updateDayNotes } from './tools/updateDayNotes.js';
 import { listTours } from './tools/listTours.js';
+import { getTourHotels } from './tools/getTourHotels.js';
+import { getTourCrew } from './tools/getTourCrew.js';
+import { getTourEvents } from './tools/getTourEvents.js';
 
 /**
  * Creates and configures the MCP server instance.
@@ -148,6 +151,64 @@ export function createServer(): McpServer {
       const client = createMasterTourClient(oauth);
       
       const result = await listTours(client);
+      
+      return {
+        content: [{ type: 'text', text: result }],
+      };
+    }
+  );
+
+  // Tool: get_tour_hotels
+  server.tool(
+    'get_tour_hotels',
+    'Get hotel information for a tour including hotel names, addresses, and notes',
+    {
+      tourId: z.string().optional().describe('Tour ID (optional if MASTERTOUR_DEFAULT_TOUR_ID is set)'),
+    },
+    async ({ tourId }) => {
+      const oauth = createOAuthClient();
+      const client = createMasterTourClient(oauth);
+      
+      const result = await getTourHotels(client, { tourId });
+      
+      return {
+        content: [{ type: 'text', text: result }],
+      };
+    }
+  );
+
+  // Tool: get_tour_crew
+  server.tool(
+    'get_tour_crew',
+    'Get tour crew members with contact info, grouped by role',
+    {
+      tourId: z.string().optional().describe('Tour ID (optional if MASTERTOUR_DEFAULT_TOUR_ID is set)'),
+    },
+    async ({ tourId }) => {
+      const oauth = createOAuthClient();
+      const client = createMasterTourClient(oauth);
+      
+      const result = await getTourCrew(client, { tourId });
+      
+      return {
+        content: [{ type: 'text', text: result }],
+      };
+    }
+  );
+
+  // Tool: get_tour_events
+  server.tool(
+    'get_tour_events',
+    'Get tour dates and events with venues, cities, and day types',
+    {
+      tourId: z.string().optional().describe('Tour ID (optional if MASTERTOUR_DEFAULT_TOUR_ID is set)'),
+      showsOnly: z.boolean().optional().describe('If true, only show "Show Day" events (excludes travel days, days off)'),
+    },
+    async ({ tourId, showsOnly }) => {
+      const oauth = createOAuthClient();
+      const client = createMasterTourClient(oauth);
+      
+      const result = await getTourEvents(client, { tourId, showsOnly });
       
       return {
         content: [{ type: 'text', text: result }],

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { addScheduleItem } from '../../src/tools/addScheduleItem.js';
+import { addScheduleItem } from '../../src/tools/addScheduleItem.ts';
 import type { MasterTourClient } from '../../src/api/client.js';
 
 describe('addScheduleItem', () => {

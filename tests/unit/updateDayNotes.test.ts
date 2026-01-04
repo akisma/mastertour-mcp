@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { updateDayNotes } from '../../src/tools/updateDayNotes.js';
+import { updateDayNotes } from '../../src/tools/updateDayNotes.ts';
 import type { MasterTourClient } from '../../src/api/client.js';
 
 describe('updateDayNotes', () => {

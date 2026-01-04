@@ -11,10 +11,76 @@ export interface TourInfo {
   organizationPermissionLevel: string;
 }
 
+export interface HotelInfo {
+  id: string;
+  name: string;
+  address?: string;
+  city?: string;
+  checkIn?: string;
+  checkOut?: string;
+  confirmationNumber?: string;
+  [key: string]: unknown;
+}
+
+export interface HotelDayInfo {
+  id: string;
+  name: string;
+  dayDate: string;
+  city: string;
+  state: string;
+  hotelNotes: string;
+  hotels: HotelInfo[];
+  [key: string]: unknown;
+}
+
+export interface TourHotelsResponse {
+  tour: {
+    artistName: string;
+    legName: string;
+    [key: string]: unknown;
+  };
+  days: HotelDayInfo[];
+}
+
+export interface CrewMember {
+  contactId: string;
+  firstName: string;
+  lastName: string;
+  preferredName?: string;
+  title?: string;
+  company?: string;
+  email?: string;
+  phone?: string;
+  [key: string]: unknown;
+}
+
+export interface EventDayInfo {
+  id: string;
+  name: string;
+  dayDate: string;
+  dayType: string;
+  city: string;
+  state: string;
+  country: string;
+  [key: string]: unknown;
+}
+
+export interface TourEventsResponse {
+  tour: {
+    artistName: string;
+    legName: string;
+    [key: string]: unknown;
+  };
+  days: EventDayInfo[];
+}
+
 export interface MasterTourClient {
   listTours(): Promise<TourInfo[]>;
   getDay(dayId: string): Promise<DayResponse>;
   getTourSummary(tourId: string, date: string): Promise<DaySummaryResponse[]>;
+  getTourHotels(tourId: string): Promise<TourHotelsResponse>;
+  getTourCrew(tourId: string): Promise<CrewMember[]>;
+  getTourEvents(tourId: string): Promise<TourEventsResponse>;
   createScheduleItem(params: CreateScheduleItemParams): Promise<{ id: string }>;
   updateScheduleItem(itemId: string, params: UpdateScheduleItemParams): Promise<void>;
   deleteScheduleItem(itemId: string): Promise<void>;
@@ -26,7 +92,8 @@ export interface UpdateDayNotesParams {
   hotelNotes: string;
   travelNotes: string;
   syncId: string;
-}export interface DayResponse {
+}
+export interface DayResponse {
   day: {
     id: string;
     tourId: string;
@@ -239,6 +306,33 @@ export function createMasterTourClient(oauthClient: OAuthClient): MasterTourClie
 
     async updateDayNotes(dayId: string, params: UpdateDayNotesParams): Promise<void> {
       await put(`/day/${dayId}`, params);
+    },
+
+    async getTourHotels(tourId: string): Promise<TourHotelsResponse> {
+      const data = await get<{ tour: TourHotelsResponse['tour'] & { days: HotelDayInfo[] } }>(`/tour/${tourId}/hotels`);
+      return {
+        tour: {
+          artistName: data.tour.artistName,
+          legName: data.tour.legName,
+        },
+        days: data.tour.days || [],
+      };
+    },
+
+    async getTourCrew(tourId: string): Promise<CrewMember[]> {
+      const data = await get<{ crew: CrewMember[] }>(`/tour/${tourId}/crew`);
+      return data.crew || [];
+    },
+
+    async getTourEvents(tourId: string): Promise<TourEventsResponse> {
+      const data = await get<{ tour: TourEventsResponse['tour'] & { days: EventDayInfo[] } }>(`/tour/${tourId}/events`);
+      return {
+        tour: {
+          artistName: data.tour.artistName,
+          legName: data.tour.legName,
+        },
+        days: data.tour.days || [],
+      };
     },
   };
 }

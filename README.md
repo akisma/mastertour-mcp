@@ -8,6 +8,9 @@ An MCP server enabling AI assistants to interact with Master Tour, the industry-
 |------|-------------|
 | `list_tours` | List all tours you have access to with IDs and permission levels |
 | `get_today_schedule` | Get daily schedule with itinerary, events, and times |
+| `get_tour_events` | Get tour dates/events with venues, cities, and day types |
+| `get_tour_hotels` | Get hotel information for tour days |
+| `get_tour_crew` | Get tour crew members with contact info, grouped by role |
 | `add_schedule_item` | Add new items to a day's schedule |
 | `update_schedule_item` | Update existing schedule items |
 | `delete_schedule_item` | Delete schedule items |
@@ -45,5 +48,5 @@ Add to `claude_desktop_config.json`:
 ## Development
 
 - `npm run build` - Compile TypeScript
-- `npm test` - Run tests (57 passing)
+- `npm test` - Run tests (73 passing)
 - `npm run lint` - Lint code

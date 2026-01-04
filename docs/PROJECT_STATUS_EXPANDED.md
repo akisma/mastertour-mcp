@@ -1,12 +1,12 @@
 # Mastertour MCP - Project Status
 
-> Last Updated: January 3, 2026
+> Last Updated: January 4, 2026
 
-## Current Phase: Phase 2 - Schedule Management
+## Current Phase: Phase 3 - Context/Reference Tools
 
-### Status: ✅ Phase 2 Complete
+### Status: ✅ Phase 3 Complete
 
-MVP (`get_today_schedule`) and all Phase 2 write operations are complete and tested against real API.
+MVP, Phase 2 write operations, and Phase 3 reference tools are complete. 9 MCP tools total, 73 tests passing.
 
 ---
 
@@ -32,14 +32,14 @@ Tools:
 - ✅ `delete_schedule_item` - Remove items
 - ✅ `update_day_notes` - Update day notes (general, hotel, travel)
 
-### Phase 3 Scope (Planned)
+### Phase 3 ✅ COMPLETE
 **Focus:** Reference/context tools to support editing workflow
 
 Tools:
-- `list_tours` - Show accessible tours
-- `get_hotels` - Hotel info for a day
-- `get_crew` - Tour crew/personnel
-- `get_events` - Venue/event details
+- ✅ `list_tours` - Show accessible tours with IDs and permission levels
+- ✅ `get_tour_hotels` - Hotel info for tour days
+- ✅ `get_tour_crew` - Tour crew/personnel grouped by role
+- ✅ `get_tour_events` - Tour dates with venues and day types
 
 ---
 
@@ -65,15 +65,18 @@ Tools:
 | delete_schedule_item | ✅ Complete | Jan 3, 2026 |
 | update_day_notes | ✅ Complete | Jan 3, 2026 |
 | Timezone fix (local→UTC) | ✅ Complete | Jan 3, 2026 |
-| 52 unit tests passing | ✅ Complete | Jan 3, 2026 |
+| ID exposure in schedule output | ✅ Complete | Jan 4, 2026 |
+| Error handling improvements | ✅ Complete | Jan 4, 2026 |
+| 57 unit tests passing | ✅ Complete | Jan 4, 2026 |
 
-### Phase 3: Context/Reference Tools
-| Milestone | Status | Target |
-|-----------|--------|--------|
-| list_tours | ⬜ Not Started | - |
-| get_hotels | ⬜ Not Started | - |
-| get_crew | ⬜ Not Started | - |
-| get_events | ⬜ Not Started | - |
+### Phase 3: Context/Reference Tools ✅ COMPLETE
+| Milestone | Status | Date |
+|-----------|--------|------|
+| list_tours | ✅ Complete | Jan 4, 2026 |
+| get_tour_hotels | ✅ Complete | Jan 4, 2026 |
+| get_tour_crew | ✅ Complete | Jan 4, 2026 |
+| get_tour_events | ✅ Complete | Jan 4, 2026 |
+| 73 unit tests passing | ✅ Complete | Jan 4, 2026 |
 
 ---
 
@@ -128,9 +131,14 @@ Tools:
 3. ~~Implement delete_schedule_item (TDD)~~ ✅
 4. ~~Implement update_day_notes (TDD)~~ ✅
 
-### Phase 3 (Next)
-1. Implement list_tours ← **NEXT**
-2. Implement get_hotels
-3. Implement get_crew
-4. Implement get_events
+### Phase 3 ✅ COMPLETE
+1. ~~Implement list_tours (TDD)~~ ✅
+2. ~~Implement get_tour_hotels (TDD)~~ ✅
+3. ~~Implement get_tour_crew (TDD)~~ ✅
+4. ~~Implement get_tour_events (TDD)~~ ✅
+
+### Phase 4 (Future)
+1. Search/filter capabilities
+2. Bulk operations
+3. Export functionality
 

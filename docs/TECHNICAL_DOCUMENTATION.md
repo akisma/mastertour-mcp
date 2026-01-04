@@ -140,24 +140,117 @@ await axios.get(baseUrl, { params, headers: { ...authHeader } });
 
 ## MCP Tools
 
-### MVP Tool: get_today_schedule
+### Discovery Tools
 
-**Purpose:** Retrieve today's itinerary and schedule summary
+#### list_tours
+List all tours accessible to the authenticated user with IDs and permission levels.
 
-**Input Schema:**
+**Input:** None required
+
+**Output:** Tours grouped by organization, showing edit vs read-only access.
+
+#### get_tour_events
+Get tour dates with venues, cities, and day types.
+
+**Input:**
+```typescript
+{
+  tourId?: string,   // Optional if default tour configured
+  showsOnly?: boolean // Filter to show days only
+}
+```
+
+### Schedule Tools
+
+#### get_today_schedule
+Retrieve today's itinerary and schedule summary.
+
+**Input:**
+```typescript
+{
+  tourId?: string,  // Optional if default tour configured
+  date?: string     // YYYY-MM-DD, defaults to today
+}
+```
+
+**Output:** Day's schedule with item IDs, times, and details.
+
+#### add_schedule_item
+Add a new item to a day's schedule.
+
+**Input:**
+```typescript
+{
+  dayId: string,      // Required day ID
+  title: string,      // Item title
+  startTime: string,  // HH:MM local venue time
+  endTime?: string,   // HH:MM, defaults to startTime
+  details?: string    // Optional notes
+}
+```
+
+**Note:** Times are entered in local venue timezone and converted to UTC for API.
+
+#### update_schedule_item
+Modify an existing schedule item.
+
+**Input:**
+```typescript
+{
+  itemId: string,     // Required item ID
+  dayId: string,      // Required day ID (for timezone)
+  title?: string,
+  startTime?: string, // HH:MM local venue time
+  endTime?: string,
+  details?: string
+}
+```
+
+#### delete_schedule_item
+Remove a schedule item.
+
+**Input:**
+```typescript
+{
+  itemId: string,  // Required item ID
+  dayId: string    // Required day ID
+}
+```
+
+#### update_day_notes
+Update notes for a day.
+
+**Input:**
+```typescript
+{
+  dayId: string,
+  generalNotes?: string,
+  hotelNotes?: string,
+  travelNotes?: string
+}
+```
+
+### Reference Tools
+
+#### get_tour_hotels
+Get hotel information for tour days.
+
+**Input:**
 ```typescript
 {
   tourId?: string  // Optional if default tour configured
 }
 ```
 
-**Output:** Today's schedule including:
-- Itinerary items
-- Events
-- Notes
-- Travel information
+#### get_tour_crew
+Get tour crew members with contact info, grouped by role.
 
-*Full schema to be defined in SOFTWARE_DESIGN_DOC.md*
+**Input:**
+```typescript
+{
+  tourId?: string  // Optional if default tour configured
+}
+```
 
 ---
 
@@ -167,13 +260,16 @@ await axios.get(baseUrl, { params, headers: { ...authHeader } });
 - **Unit Tests:** Mock API responses, test business logic
 - **Integration Tests:** Real Master Tour account, test actual API calls
 
-### Test Structure
-*To be defined*
+### Test Coverage
+- 12 test files
+- 73 tests passing
+- All tools have dedicated test suites
 
 ### Running Tests
 ```bash
-# TBD
-npm test
+npm test           # Run all tests
+npm run build      # Compile TypeScript
+npm run lint       # Lint code
 ```
 
 ---
@@ -228,3 +324,5 @@ TEST_TOUR_ID=optional-tour-for-integration
 | Jan 3, 2026 | Initial document creation | - |
 | Jan 3, 2026 | Recorded stack choices (axios, date-fns, Vitest) and added tours endpoint note | - |
 | Jan 3, 2026 | Timezone spike completed - documented dual time fields (UTC + local), corrected base URL | - |
+| Jan 4, 2026 | Phase 2 complete - added schedule CRUD tools with timezone handling | - |
+| Jan 4, 2026 | Phase 3 complete - added list_tours, get_tour_hotels, get_tour_crew, get_tour_events | - |
