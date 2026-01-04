@@ -54,10 +54,23 @@ An MCP (Model Context Protocol) server that enables AI assistants to interact wi
 ### Component Details
 *To be added as implementation progresses*
 
-### Timezone Handling (pending spike)
-- Master Tour docs do not state timezone semantics; example datetimes are naive (no TZ).
-- Plan: run a pre-work spike against real API data to confirm storage/returned timezone behavior.
-- Until confirmed, treat returned datetimes as tour-local display strings; avoid conversions.
+### Timezone Handling (spike completed Jan 3, 2026)
+
+The API uses **naive datetime strings** in `YYYY-MM-DD HH:MM:SS` format with timezone context provided separately.
+
+**Key Discovery:** The API provides **dual time representations**:
+
+| Field | Example | Meaning |
+|-------|---------|--------|
+| `startDatetime` | `"2026-02-06 20:00:00"` | **UTC time** |
+| `paulStartTime` | `"2026-02-06 12:00:00"` | **Local time** (venue timezone) |
+| `dayTimeZone` | `"America/Los_Angeles"` | IANA timezone identifier |
+
+**Implementation approach:**
+- Use `paulStartTime` / `paulEndTime` for display (already in local time)
+- Use `dayTimeZone` for timezone context if needed
+- No complex timezone conversion required for MVP
+- `date-fns` sufficient for parsing; `date-fns-tz` not needed initially
 
 ---
 
@@ -65,7 +78,7 @@ An MCP (Model Context Protocol) server that enables AI assistants to interact wi
 
 ### Master Tour API
 
-**Base URL:** `https://my.eventric.com/api/v5/`
+**Base URL:** `https://my.eventric.com/portal/api/v5/` *(Note: `/portal/` prefix required)*
 
 **Required Parameter:** `version=7` (prevents HTTP 426 errors)
 
@@ -108,11 +121,20 @@ Master Tour uses OAuth 1.0 signature authentication (not OAuth 2.0).
 
 **Signing Process:**
 1. Generate timestamp and nonce
-2. Build signature base string
+2. Build signature base string (must include query params!)
 3. Sign with HMAC-SHA1
 4. Add signature to request headers
 
-*Implementation details to be added*
+**Critical:** Query parameters must be included in the signature calculation via the `data` property:
+```javascript
+const requestData = { 
+  url: baseUrl, 
+  method: 'GET', 
+  data: params  // params included here for signing!
+};
+const authHeader = oauth.toHeader(oauth.authorize(requestData));
+await axios.get(baseUrl, { params, headers: { ...authHeader } });
+```
 
 ---
 
@@ -205,3 +227,4 @@ TEST_TOUR_ID=optional-tour-for-integration
 |------|--------|--------|
 | Jan 3, 2026 | Initial document creation | - |
 | Jan 3, 2026 | Recorded stack choices (axios, date-fns, Vitest) and added tours endpoint note | - |
+| Jan 3, 2026 | Timezone spike completed - documented dual time fields (UTC + local), corrected base URL | - |
