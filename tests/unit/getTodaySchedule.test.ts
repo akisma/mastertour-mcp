@@ -121,13 +121,15 @@ describe('formatSchedule', () => {
       ],
     };
 
-    const result = formatSchedule(day);
+    const result = formatSchedule(day, 'day123');
 
     expect(result).toContain('Hollywood Forever');
     expect(result).toContain('Los Angeles, CA');
     expect(result).toContain('Show Day');
+    expect(result).toContain('Day ID: day123');
     expect(result).toContain('12:00 PM');
     expect(result).toContain('venue access');
+    expect(result).toContain('ID: item1');
   });
 
   it('handles empty schedule items', () => {
@@ -144,9 +146,10 @@ describe('formatSchedule', () => {
       scheduleItems: [],
     };
 
-    const result = formatSchedule(day);
+    const result = formatSchedule(day, 'day456');
 
     expect(result).toContain('Travel Day');
     expect(result).toContain('No scheduled items');
+    expect(result).toContain('Day ID: day456');
   });
 });

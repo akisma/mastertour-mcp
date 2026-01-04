@@ -33,22 +33,23 @@ export async function getTodaySchedule(
   // Get full day details with schedule
   const dayResponse = await client.getDay(dayId);
 
-  return formatSchedule(dayResponse.day);
+  return formatSchedule(dayResponse.day, dayId);
 }
 
-export function formatSchedule(day: DayResponse['day']): string {
+export function formatSchedule(day: DayResponse['day'], dayId: string): string {
   const lines: string[] = [];
 
   // Parse the date
   const dayDate = parse(day.dayDate, 'yyyy-MM-dd HH:mm:ss', new Date());
   const formattedDate = format(dayDate, 'MMM d, yyyy');
 
-  // Header
+  // Header with day ID for use with write operations
   lines.push(`📅 ${formattedDate} - ${day.name}`);
   lines.push(`📍 ${day.city}, ${day.state} (${day.timeZone})`);
   if (day.dayType) {
     lines.push(`🎸 ${day.dayType}`);
   }
+  lines.push(`🆔 Day ID: ${dayId}`);
   lines.push('');
 
   // Schedule items
@@ -59,6 +60,7 @@ export function formatSchedule(day: DayResponse['day']): string {
     for (const item of day.scheduleItems) {
       const time = formatTime(item.paulStartTime);
       lines.push(`• ${time} - ${item.title}`);
+      lines.push(`  ID: ${item.id}`);
     }
   }
 
