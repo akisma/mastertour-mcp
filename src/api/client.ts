@@ -5,7 +5,7 @@ const BASE_URL = 'https://my.eventric.com/portal/api/v5';
 
 export interface MasterTourClient {
   getDay(dayId: string): Promise<DayResponse>;
-  getTourSummary(tourId: string, date: string): Promise<DaySummaryResponse>;
+  getTourSummary(tourId: string, date: string): Promise<DaySummaryResponse[]>;
 }
 
 export interface DayResponse {
@@ -64,8 +64,8 @@ export function createMasterTourClient(oauthClient: OAuthClient): MasterTourClie
       return request<DayResponse>(`/day/${dayId}`);
     },
 
-    async getTourSummary(tourId: string, date: string): Promise<DaySummaryResponse> {
-      return request<DaySummaryResponse>(`/tour/${tourId}/summary/${date}`);
+    async getTourSummary(tourId: string, date: string): Promise<DaySummaryResponse[]> {
+      return request<DaySummaryResponse[]>(`/tour/${tourId}/summary/${date}`);
     },
   };
 }

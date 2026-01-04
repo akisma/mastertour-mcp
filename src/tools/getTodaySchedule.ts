@@ -23,12 +23,12 @@ export async function getTodaySchedule(
   const summary = await client.getTourSummary(tourId, date);
   
   // Handle case where no day exists for that date
-  if (!summary || (Array.isArray(summary) && summary.length === 0)) {
+  if (!summary || summary.length === 0) {
     return `No schedule found for ${date}. The tour may not have activity on this date.`;
   }
 
-  // Get the day ID (summary could be array or object)
-  const dayId = Array.isArray(summary) ? summary[0].id : (summary as { id: string }).id;
+  // Get the day ID from the first summary item
+  const dayId = summary[0].id;
 
   // Get full day details with schedule
   const dayResponse = await client.getDay(dayId);
