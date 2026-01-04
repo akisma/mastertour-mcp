@@ -9,6 +9,10 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { z } from 'zod';
+import { createOAuthClient } from './auth/oauth.js';
+import { createMasterTourClient } from './api/client.js';
+import { getTodaySchedule } from './tools/getTodaySchedule.js';
 
 /**
  * Creates and configures the MCP server instance.
@@ -20,8 +24,25 @@ export function createServer(): McpServer {
     version: '1.0.0',
   });
 
-  // Tools will be registered here as we implement them
-  // registerGetTodaySchedule(server);
+  // Register get_today_schedule tool
+  server.tool(
+    'get_today_schedule',
+    "Get today's tour schedule including itinerary, events, and times",
+    {
+      tourId: z.string().optional().describe('Tour ID (optional if MASTERTOUR_DEFAULT_TOUR_ID is set)'),
+      date: z.string().optional().describe('Date in YYYY-MM-DD format (defaults to today)'),
+    },
+    async ({ tourId, date }) => {
+      const oauth = createOAuthClient();
+      const client = createMasterTourClient(oauth);
+      
+      const result = await getTodaySchedule(client, { tourId, date });
+      
+      return {
+        content: [{ type: 'text', text: result }],
+      };
+    }
+  );
 
   return server;
 }
