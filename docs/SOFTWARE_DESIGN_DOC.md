@@ -51,7 +51,7 @@ We prove the full stack works before expanding functionality.
 - ✅ Complete test coverage (unit + integration)
 - ✅ Production-ready error handling
 - ✅ Clean, documented code
-- ✅ Confirm timezone handling via spike before deep build
+- ✅ Confirm timezone handling via spike before deep build (COMPLETED)
 
 ### Non-Goals (MVP)
 - ❌ Multiple tools (deferred to Phase 2)
@@ -71,10 +71,11 @@ We prove the full stack works before expanding functionality.
 - Manages schedules, hotels, guest lists, crew, venues
 
 ### Master Tour API
-- REST API at `https://my.eventric.com/api/v5/`
+- REST API at `https://my.eventric.com/portal/api/v5/` *(Note: `/portal/` prefix required)*
 - OAuth 1.0 authentication (key/secret signing)
 - JSON responses with `{success, message, data}` structure
 - Requires `version=7` query parameter
+- **Datetime handling:** API provides dual times - `startDatetime` (UTC) and `paulStartTime` (local venue time)
 
 ### MCP (Model Context Protocol)
 - Protocol for AI assistants to interact with external tools
@@ -208,7 +209,7 @@ User asks about today's schedule
          ▼
 ┌─────────────────────┐
 │ Determine today's   │
-│ date (server TZ)    │
+│ date (input or now) │
 └─────────────────────┘
          │
          ▼
@@ -532,17 +533,19 @@ npm run test:coverage # Coverage report
 
 ## 11. Implementation Plan
 
-### Phase -1: Pre-Work Spike (Timezone Handling)
-- [ ] Call real API (authorized creds) to inspect datetime fields for timezone/storage semantics
-- [ ] Document findings and adjust parsing/formatting strategy
-- [ ] Update TECHNICAL_DOCUMENTATION.md accordingly
+### Phase -1: Pre-Work Spike (Timezone Handling) ✅ COMPLETED
+- [x] Call real API (authorized creds) to inspect datetime fields for timezone/storage semantics
+- [x] Document findings and adjust parsing/formatting strategy
+- [x] Update TECHNICAL_DOCUMENTATION.md accordingly
 
-### Phase 0: Project Setup
-- [ ] Initialize npm project
-- [ ] Configure TypeScript
-- [ ] Set up Vitest
-- [ ] Configure ESLint/Prettier
-- [ ] Create project structure
+**Findings:** API provides `paulStartTime`/`paulEndTime` in local venue time and `dayTimeZone` (IANA format). Use local times directly for display - no conversion needed.
+
+### Phase 0: Project Setup ✅ COMPLETED
+- [x] Initialize npm project
+- [x] Configure TypeScript
+- [x] Set up Vitest
+- [x] Configure ESLint/Prettier
+- [x] Create project structure
 
 ### Phase 1: Authentication
 - [ ] **Tests first:** Write unit tests for OAuth signing
@@ -582,7 +585,7 @@ npm run test:coverage # Coverage report
 |---|----------|---------|----------|------|
 | 1 | HTTP client library? | fetch (native) vs axios | **axios** | Jan 3, 2026 |
 | 2 | Date handling library? | Native Date vs date-fns vs dayjs | **date-fns** | Jan 3, 2026 |
-| 3 | Timezone handling? | Server timezone vs UTC vs configurable | **Spike required** (Phase -1) | Jan 3, 2026 |
+| 3 | Timezone handling? | Server timezone vs UTC vs configurable | **Use `paulStartTime` (local venue time) from API** | Jan 3, 2026 |
 | 4 | Default tour ID behavior? | Required vs optional with env default | **Optional with env default + tool override** | Jan 3, 2026 |
 | 5 | Test framework? | Vitest vs Jest | **Vitest** | Jan 3, 2026 |
 
@@ -611,3 +614,4 @@ Full API docs: `https://my.eventric.com/portal/apidocs`
 | Version | Date | Changes | Author |
 |---------|------|---------|--------|
 | 0.1 | Jan 3, 2026 | Initial draft | Engineering Team |
+| 0.2 | Jan 3, 2026 | Timezone spike complete, Phase 0 complete, corrected base URL | Engineering Team |

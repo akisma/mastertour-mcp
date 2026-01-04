@@ -2,11 +2,11 @@
 
 > Last Updated: January 3, 2026
 
-## Current Phase: Project Scaffolding
+## Current Phase: Implementation
 
-### Status: 🟢 Scaffolding Complete
+### Status: 🟢 Ready for OAuth Module
 
-Project scaffolding is complete. Tests pass, build passes, dev script runs.
+Timezone spike complete. API connectivity verified. Ready to implement OAuth module.
 
 ---
 
@@ -38,7 +38,7 @@ These will be addressed in subsequent phases after MVP is proven.
 |-----------|--------|--------|
 | Software Design Doc | ✅ Complete | Jan 3, 2026 |
 | Project Scaffolding | ✅ Complete | Jan 3, 2026 |
-| Timezone Spike | ⏸️ Deferred | Pending API creds |
+| Timezone Spike | ✅ Complete | Jan 3, 2026 |
 | OAuth Implementation | ⬜ Not Started | - |
 | API Client | ⬜ Not Started | - |
 | get_today_schedule Tool | ⬜ Not Started | - |
@@ -62,6 +62,8 @@ These will be addressed in subsequent phases after MVP is proven.
 | date-fns for dates | Tree-shakeable, good TS support | Jan 3, 2026 |
 | Vitest for testing | Fast, native ESM, modern | Jan 3, 2026 |
 | tsx for dev runner | Fast TS execution without build | Jan 3, 2026 |
+| Use paulStartTime for display | API provides local time directly; no conversion needed | Jan 3, 2026 |
+| Base URL: /portal/api/v5/ | Discovered via spike; docs had wrong URL | Jan 3, 2026 |
 
 ---
 
@@ -70,9 +72,9 @@ These will be addressed in subsequent phases after MVP is proven.
 | Risk | Mitigation | Status |
 |------|------------|--------|
 | OAuth 1.0 complexity | Use proven oauth-1.0a package | Monitoring |
-| API documentation gaps | Have real account for testing | Blocked (no creds yet) |
+| API documentation gaps | Have real account for testing | ✅ Resolved |
 | Rate limiting unknown | Build in retry logic | Planning |
-| Timezone semantics unknown | Spike deferred until API creds available | Blocked |
+| Timezone semantics unknown | Spike completed - use paulStartTime for local | ✅ Resolved |
 
 ---
 
@@ -80,9 +82,9 @@ These will be addressed in subsequent phases after MVP is proven.
 
 1. ~~Complete SOFTWARE_DESIGN_DOC.md~~ ✅
 2. ~~Project scaffolding~~ ✅
-3. Obtain Master Tour API credentials
-4. Run timezone spike to confirm datetime handling
-5. Implement OAuth signing module (TDD)
+3. ~~Obtain Master Tour API credentials~~ ✅
+4. ~~Run timezone spike to confirm datetime handling~~ ✅
+5. Implement OAuth signing module (TDD) ← **CURRENT**
 6. Implement API client (TDD)
 7. Implement get_today_schedule tool (TDD)
 
