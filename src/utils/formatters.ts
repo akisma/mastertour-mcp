@@ -32,13 +32,13 @@ export function formatDate(dateStr: string): string {
  */
 export function formatField(label: string, value: string | undefined, indent = 2): string {
   if (!value || value.trim() === '') return '';
-  // Decode HTML entities
+  // Decode HTML entities (decode &amp; last to prevent double-unescaping)
   const decoded = value
     .replace(/&apos;/g, "'")
     .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>');
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
   return `${' '.repeat(indent)}• ${label}: ${decoded}`;
 }
 
