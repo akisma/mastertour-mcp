@@ -82,7 +82,7 @@ describe('getTodaySchedule', () => {
 
       expect(mockClient.getTourSummary).toHaveBeenCalledWith('tour123', today);
     });
-  });;
+  });
 });
 
 describe('formatSchedule', () => {
