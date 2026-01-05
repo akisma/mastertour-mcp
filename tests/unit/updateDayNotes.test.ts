@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { updateDayNotes } from '../../src/tools/updateDayNotes.ts';
-import type { MasterTourClient } from '../../src/api/client.js';
+import type { MasterTourClient } from '../../src/api/client.ts';
 
 describe('updateDayNotes', () => {
   const mockClient = {
@@ -129,8 +129,8 @@ describe('updateDayNotes', () => {
         generalNotes: 'Some notes',
       });
 
-      expect(result).toContain('Los Angeles');
-      expect(result).toContain('updated');
+      expect(result.text).toContain('Los Angeles');
+      expect(result.text).toContain('updated');
     });
   });
 });

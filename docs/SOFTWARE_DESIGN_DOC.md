@@ -1,8 +1,8 @@
 # Mastertour MCP - Software Design Document
 
-> **Status:** DRAFT - Pending Review  
+> **Status:** PHASE 4 COMPLETE - 12 MCP Tools Implemented  
 > **Author:** Engineering Team  
-> **Last Updated:** January 3, 2026  
+> **Last Updated:** January 2026  
 > **Reviewers:** Principal Engineer
 
 ---
@@ -28,40 +28,53 @@
 ## 1. Executive Summary
 
 ### What
-An MCP server enabling AI assistants to retrieve tour schedule information from Master Tour (Eventric).
+An MCP server enabling AI assistants to manage tour schedules, crew, hotels, venues, and production information from Master Tour (Eventric).
 
 ### Why
 - No existing MCP integration for Master Tour
-- Tour managers need AI-assisted access to schedules
+- Tour managers need AI-assisted access to schedules and venue research
 - Demonstrate end-to-end MCP + external API integration
 
-### MVP Scope
-**One tool only:** `get_today_schedule`
+### Current State
+**12 MCP tools implemented across 4 phases:**
+- Phase 1: MVP (`get_today_schedule`)
+- Phase 2: CRUD Operations (schedule items, day notes)
+- Phase 3: Reference Tools (tours, hotels, crew, events)
+- Phase 4: Venue Research (venue search, details, upcoming shows)
 
-We prove the full stack works before expanding functionality.
+**Architecture Refactoring Complete:**
+- Dependency injection pattern with singleton client
+- Centralized config module with fail-fast validation
+- Structured output types (`ToolResult<T>`) for all tools
+- Shared formatters and tour iterator utilities
+- 127 tests across 17 files, GitHub Actions CI
 
 ---
 
 ## 2. Goals & Non-Goals
 
-### Goals (MVP)
+### Goals (Phases 1-4) - ALL COMPLETE ✅
 - ✅ Authenticate with Master Tour API using OAuth 1.0
-- ✅ Implement single MCP tool: `get_today_schedule`
+- ✅ Implement 12 MCP tools across 4 phases
 - ✅ Return formatted schedule data to AI assistant
-- ✅ Complete test coverage (unit + integration)
+- ✅ Complete test coverage (127 tests passing)
 - ✅ Production-ready error handling
 - ✅ Clean, documented code
-- ✅ Confirm timezone handling via spike before deep build (COMPLETED)
+- ✅ Confirm timezone handling via spike before deep build
+- ✅ Structured output types for programmatic access
 
-### Non-Goals (MVP) - Now Goals for Phase 2/3
-- ✅ MVP complete - now expanding
-- ⬜ Write operations (Phase 2)
-- ⬜ Additional read tools (Phase 3)
+### Non-Goals
 - ❌ MCP Resources or Prompts (not planned)
 - ❌ Caching layer (not planned)
 - ❌ Rate limiting (monitor, implement if needed)
+- ❌ Venue/event creation (API limitation - desktop client only)
 
-### Phase 2: Schedule Management (TM/PM Core Workflow)
+### Phase 1: MVP ✅ COMPLETE
+| Tool | Method | Purpose |
+|------|--------|--------|
+| `get_today_schedule` | GET | Today's schedule with itinerary, events, hotels |
+
+### Phase 2: Schedule Management ✅ COMPLETE
 | Tool | Method | Purpose |
 |------|--------|--------|
 | `add_schedule_item` | POST | Add items to day schedule |
@@ -69,13 +82,27 @@ We prove the full stack works before expanding functionality.
 | `delete_schedule_item` | DELETE | Remove schedule items |
 | `update_day_notes` | PUT | Update general/travel/hotel notes |
 
-### Phase 3: Context/Reference Tools
+### Phase 3: Context/Reference Tools ✅ COMPLETE
 | Tool | Method | Purpose |
 |------|--------|--------|
 | `list_tours` | GET | Show all accessible tours |
-| `get_hotels` | GET | Hotel info for a day |
-| `get_crew` | GET | Crew/personnel for tour |
-| `get_events` | GET | Venue/event details for a day |
+| `get_tour_hotels` | GET | Hotel info for tour |
+| `get_tour_crew` | GET | Crew/personnel for tour |
+| `get_tour_events` | GET | Venue/event details for tour |
+
+### Phase 4: Venue Research Tools ✅ COMPLETE
+| Tool | Method | Purpose |
+|------|--------|--------|
+| `search_past_venues` | GET | Search venues from user's historical tours |
+| `get_venue_details` | GET | Complete venue info (production, contacts, facilities) |
+| `get_upcoming_shows` | GET | Upcoming shows across all tours |
+
+### Future Roadmap (Phase 5+)
+| Priority | Tool | Description |
+|----------|------|-------------|
+| P3 | `get_promoter_details` | Promoter info for settlements |
+| P3 | `search_contacts` | Search contacts across tours |
+| P4 | `get_tour_production_summary` | Production overview for advance |
 
 ---
 
@@ -128,29 +155,54 @@ We prove the full stack works before expanding functionality.
 
 | Component | Responsibility |
 |-----------|----------------|
-| MCP Server (index.ts) | Entry point, transport setup, tool registration |
-| OAuth Auth (auth.ts) | Sign requests with OAuth 1.0 |
+| MCP Server (index.ts) | Entry point, transport setup, tool registration, DI container |
+| Config (config.ts) | Environment validation, configuration management |
+| OAuth Auth (auth/oauth.ts) | Sign requests with OAuth 1.0 |
 | API Client (api/client.ts) | HTTP requests to Master Tour (axios) |
 | Tools (tools/*.ts) | MCP tool implementations |
+| Types (types/outputs.ts) | Structured output type definitions |
+| Formatters (utils/formatters.ts) | Shared output formatting |
+| Tour Iterator (utils/tourIterator.ts) | Async iteration over tours/days |
 
 ### Project Structure
 
 ```
 mastertour-mcp/
+├── .github/
+│   └── workflows/
+│       └── ci.yml            # GitHub Actions CI (Node 20.x/22.x)
 ├── src/
-│   ├── index.ts              # MCP server entry point
-│   ├── auth.ts               # OAuth 1.0 signing
+│   ├── index.ts              # MCP server entry point, tool registration
+│   ├── config.ts             # Environment config, fail-fast validation
+│   ├── auth/
+│   │   └── oauth.ts          # OAuth 1.0 signing
 │   ├── api/
 │   │   └── client.ts         # Master Tour HTTP client
+│   ├── types/
+│   │   └── outputs.ts        # Structured output types (ToolResult<T>)
 │   ├── tools/
-│   │   └── getTodaySchedule.ts
-│   └── types/
-│       └── mastertour.ts     # Type definitions
+│   │   ├── getTodaySchedule.ts
+│   │   ├── addScheduleItem.ts
+│   │   ├── updateScheduleItem.ts
+│   │   ├── deleteScheduleItem.ts
+│   │   ├── updateDayNotes.ts
+│   │   ├── listTours.ts
+│   │   ├── getTourHotels.ts
+│   │   ├── getTourCrew.ts
+│   │   ├── getTourEvents.ts
+│   │   ├── searchPastVenues.ts
+│   │   ├── getVenueDetails.ts
+│   │   └── getUpcomingShows.ts
+│   └── utils/
+│       ├── formatters.ts     # Shared formatting utilities
+│       └── tourIterator.ts   # Tour/day iteration helpers
 ├── tests/
-│   ├── unit/
+│   ├── unit/                 # 17 test files, 127 tests
 │   │   ├── auth.test.ts
+│   │   ├── config.test.ts
+│   │   ├── formatters.test.ts
 │   │   ├── client.test.ts
-│   │   └── getTodaySchedule.test.ts
+│   │   └── [tool].test.ts    # One test file per tool
 │   └── integration/
 │       └── getTodaySchedule.integration.test.ts
 ├── package.json
@@ -163,28 +215,94 @@ mastertour-mcp/
 
 ## 5. Detailed Design
 
-### 5.1 MCP Server Initialization
+### 5.1 Dependency Injection Pattern
+
+The server uses dependency injection for testability and single-client initialization:
 
 ```typescript
-// src/index.ts - Conceptual design
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { registerGetTodaySchedule } from './tools/getTodaySchedule.js';
+// src/index.ts
+export interface ServerDependencies {
+  client: MasterTourClient;
+  config: Config;
+}
 
-const server = new McpServer({
-  name: 'mastertour',
-  version: '1.0.0',
-});
+// Create server with injected dependencies (for testing)
+export function createServer(deps?: ServerDependencies): McpServer {
+  const { client, config } = deps ?? createDefaultDependencies();
+  
+  const server = new McpServer({
+    name: 'mastertour',
+    version: '1.0.0',
+  });
+  
+  registerTools(server, client, config);
+  return server;
+}
 
-// Register tools
-registerGetTodaySchedule(server);
-
-// Connect via stdio
-const transport = new StdioServerTransport();
-await server.connect(transport);
+// Production: creates real dependencies
+function createDefaultDependencies(): ServerDependencies {
+  const config = loadConfig();
+  const oauth = createOAuthClientFromConfig(config);
+  const client = createMasterTourClient(oauth);
+  return { client, config };
+}
 ```
 
-### 5.2 OAuth 1.0 Authentication
+**Benefits:**
+- Single client instance shared across all tools
+- Configuration validated once at startup
+- Tests can inject mocks without environment manipulation
+- Clear separation between wiring and business logic
+
+### 5.2 Configuration Management
+
+```typescript
+// src/config.ts
+export interface Config {
+  oauth: {
+    consumerKey: string;
+    consumerSecret: string;
+    accessToken: string;
+    tokenSecret: string;
+  };
+  defaultTourId?: number;
+}
+
+export function loadConfig(): Config {
+  // Validates all required env vars, throws descriptive errors
+  // Called once at startup for fail-fast behavior
+}
+
+export function resolveTourId(config: Config, providedTourId?: number): number {
+  // Returns providedTourId if set, else config.defaultTourId
+  // Throws if neither available
+}
+```
+
+### 5.3 Shared Utilities
+
+**Tour Iterator (`utils/tourIterator.ts`):**
+```typescript
+// Async generator for iterating through tours and days
+export async function* iterateTourDays(
+  client: MasterTourClient,
+  tourIds?: number[]
+): AsyncGenerator<{ tour: Tour; day: TourDay; events: TourEvent[] }> {
+  // Handles multi-tour iteration with proper error handling
+}
+```
+
+**Formatters (`utils/formatters.ts`):**
+```typescript
+export function formatDate(date: string | null | undefined, format?: string): string;
+export function formatField(label: string, value: unknown): string;
+export function separator(char?: string, length?: number): string;
+export function formatLocation(location: object): string;
+export function formatContacts(contacts: unknown[]): string;
+export function normalizeForSearch(text: string | null | undefined): string;
+```
+
+### 5.4 OAuth 1.0 Authentication
 
 **Signing Flow:**
 1. Collect request parameters (method, URL, params)
@@ -195,7 +313,7 @@ await server.connect(transport);
 
 **Design Decision:** Use `oauth-1.0a` npm package for signing logic.
 
-### 5.3 API Client
+### 5.5 API Client
 
 **Responsibilities:**
 - Build request URLs with required `version=7` param
@@ -210,7 +328,7 @@ await server.connect(transport);
 - Default tour: optional env `MASTERTOUR_DEFAULT_TOUR_ID` with tool override
 - Tours listing: `GET /api/v5/tours` available for future selection UX
 
-### 5.4 get_today_schedule Tool
+### 5.6 get_today_schedule Tool
 
 **Flow:**
 ```
@@ -549,47 +667,49 @@ npm run test:coverage # Coverage report
 
 ## 11. Implementation Plan
 
-### Phase -1: Pre-Work Spike (Timezone Handling) ✅ COMPLETED
+### Phase -1: Pre-Work Spike (Timezone Handling) ✅ COMPLETE
 - [x] Call real API (authorized creds) to inspect datetime fields for timezone/storage semantics
 - [x] Document findings and adjust parsing/formatting strategy
 - [x] Update TECHNICAL_DOCUMENTATION.md accordingly
 
 **Findings:** API provides `paulStartTime`/`paulEndTime` in local venue time and `dayTimeZone` (IANA format). Use local times directly for display - no conversion needed.
 
-### Phase 0: Project Setup ✅ COMPLETED
+### Phase 0: Project Setup ✅ COMPLETE
 - [x] Initialize npm project
 - [x] Configure TypeScript
 - [x] Set up Vitest
 - [x] Configure ESLint/Prettier
 - [x] Create project structure
 
-### Phase 1: Authentication
-- [ ] **Tests first:** Write unit tests for OAuth signing
-- [ ] Implement OAuth 1.0 signing module
-- [ ] Verify tests pass
+### Phase 1: MVP - get_today_schedule ✅ COMPLETE
+- [x] OAuth 1.0 signing module
+- [x] API client with error handling
+- [x] `get_today_schedule` tool implementation
+- [x] Unit and integration tests
 
-### Phase 2: API Client
-- [ ] **Tests first:** Write unit tests for client
-- [ ] Implement HTTP client with signing
-- [ ] Add error handling
-- [ ] Verify tests pass
+### Phase 2: CRUD Operations ✅ COMPLETE
+- [x] `add_schedule_item` - POST to day schedule
+- [x] `update_schedule_item` - PUT to modify items
+- [x] `delete_schedule_item` - DELETE to remove items
+- [x] `update_day_notes` - PUT for general/travel/hotel notes
 
-### Phase 3: MCP Tool
-- [ ] **Tests first:** Write unit tests for tool
-- [ ] Implement `get_today_schedule` tool
-- [ ] Register with MCP server
-- [ ] Verify tests pass
+### Phase 3: Reference Tools ✅ COMPLETE
+- [x] `list_tours` - All accessible tours
+- [x] `get_tour_hotels` - Hotel info by tour
+- [x] `get_tour_crew` - Crew/personnel
+- [x] `get_tour_events` - Venue/event details
 
-### Phase 4: Integration
-- [ ] Write integration tests
-- [ ] Test with real Master Tour account
-- [ ] Fix any issues discovered
+### Phase 4: Venue Research Tools ✅ COMPLETE
+- [x] `search_past_venues` - Search venues from historical tours
+- [x] `get_venue_details` - Complete venue info (production, contacts, facilities, equipment, logistics)
+- [x] `get_upcoming_shows` - Upcoming shows across all tours
+- [x] API exploration documented (no global venue search, no event creation API)
 
-### Phase 5: Documentation & Polish
-- [ ] Complete README
-- [ ] Add inline code documentation
-- [ ] Update TECHNICAL_DOCUMENTATION.md
-- [ ] Manual end-to-end testing
+### Test Coverage
+- 15 test files
+- 100 tests passing
+- All tools have dedicated unit tests
+- Integration tests for real API verification
 
 ---
 
@@ -631,3 +751,6 @@ Full API docs: `https://my.eventric.com/portal/apidocs`
 |---------|------|---------|--------|
 | 0.1 | Jan 3, 2026 | Initial draft | Engineering Team |
 | 0.2 | Jan 3, 2026 | Timezone spike complete, Phase 0 complete, corrected base URL | Engineering Team |
+| 0.3 | Jan 2026 | Phase 1-3 complete (9 tools, 73 tests) | Engineering Team |
+| 1.0 | Jan 2026 | Phase 4 complete (12 tools, 100 tests) - venue research tools | Engineering Team |
+| 1.1 | Jan 2026 | Architecture refactoring: DI pattern, config module, shared formatters, tour iterator (127 tests) | Engineering Team |

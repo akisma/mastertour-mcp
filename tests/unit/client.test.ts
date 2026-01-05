@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMasterTourClient } from '../../src/api/client.js';
-import type { OAuthClient } from '../../src/auth/oauth.js';
+import { createMasterTourClient } from '../../src/api/client.ts';
+import type { OAuthClient } from '../../src/auth/oauth.ts';
 
 // Mock axios
 vi.mock('axios', () => ({

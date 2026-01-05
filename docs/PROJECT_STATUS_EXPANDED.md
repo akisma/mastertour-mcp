@@ -1,12 +1,12 @@
 # Mastertour MCP - Project Status
 
-> Last Updated: January 4, 2026
+> Last Updated: January 4, 2026 (Evening)
 
-## Current Phase: Phase 3 - Context/Reference Tools
+## Current Phase: Post-Phase 4 - Architecture Refactoring
 
-### Status: ✅ Phase 3 Complete
+### Status: ✅ Phase 4 Complete + Refactoring In Progress
 
-MVP, Phase 2 write operations, and Phase 3 reference tools are complete. 9 MCP tools total, 73 tests passing.
+All phases complete. 12 MCP tools total, 127 tests passing across 17 test files. Completed major architecture refactoring: DI pattern, config module, shared formatters, tour iterator, and structured outputs. CI/CD pipeline established.
 
 ---
 
@@ -40,6 +40,16 @@ Tools:
 - ✅ `get_tour_hotels` - Hotel info for tour days
 - ✅ `get_tour_crew` - Tour crew/personnel grouped by role
 - ✅ `get_tour_events` - Tour dates with venues and day types
+
+### Phase 4 ✅ COMPLETE
+**Focus:** Use-case driven development - venue research tools
+
+**Primary Use Case:** Tour manager needing to start laying out a new tour leg
+
+Tools:
+- ✅ `search_past_venues` - Search venues from historical tours by name/city/state
+- ✅ `get_venue_details` - Complete venue info: production specs, contacts, facilities
+- ✅ `get_upcoming_shows` - Upcoming shows across all tours, sorted by date
 
 ---
 
@@ -78,6 +88,18 @@ Tools:
 | get_tour_events | ✅ Complete | Jan 4, 2026 |
 | 73 unit tests passing | ✅ Complete | Jan 4, 2026 |
 
+### Phase 4: Use-Case Driven / Venue Research ✅ COMPLETE
+| Milestone | Status | Date |
+|-----------|--------|------|
+| API exploration (events/venues) | ✅ Complete | Jan 4, 2026 |
+| search_past_venues | ✅ Complete | Jan 4, 2026 |
+| get_venue_details | ✅ Complete | Jan 4, 2026 |
+| get_upcoming_shows | ✅ Complete | Jan 4, 2026 |
+| Architecture refactoring (DI, config, formatters) | ✅ Complete | Jan 4, 2026 |
+| Structured outputs refactoring | ✅ Complete | Jan 4, 2026 |
+| GitHub Actions CI | ✅ Complete | Jan 4, 2026 |
+| 127 unit tests passing (17 files) | ✅ Complete | Jan 4, 2026 |
+
 ---
 
 ## Key Decisions Made
@@ -99,6 +121,10 @@ Tools:
 | User input = local time | Users enter times in venue local time, tool converts to UTC | Jan 3, 2026 |
 | date-fns-tz for conversions | Proper timezone handling for local→UTC | Jan 3, 2026 |
 | syncId required for PUT | Discovered via testing; API requires syncId field | Jan 3, 2026 |
+| Pivot to use-case driven | Build tools based on TM workflows, not API coverage | Jan 4, 2026 |
+| No global venue search | API doesn't expose venue search; search within user's tours instead | Jan 4, 2026 |
+| No event creation API | Day-venue links created by desktop client only; MCP handles research/schedules | Jan 4, 2026 |
+| Venues via day events | `/day/{id}/events` returns complete venue data (production, contacts, facilities) | Jan 4, 2026 |
 
 ---
 
@@ -137,8 +163,62 @@ Tools:
 3. ~~Implement get_tour_crew (TDD)~~ ✅
 4. ~~Implement get_tour_events (TDD)~~ ✅
 
-### Phase 4 (Future)
-1. Search/filter capabilities
-2. Bulk operations
-3. Export functionality
+### Phase 5 (Future)
+| Priority | Tool | Description |
+|----------|------|-------------|
+| P3 | `get_promoter_details` | Promoter info for settlements, guest lists |
+| P3 | `search_contacts` | Search contacts across tours |
+| P4 | `get_tour_production_summary` | Production overview for advance planning |
+
+---
+
+## Architecture Refactoring (Completed Jan 4, 2026)
+
+### ✅ Completed Refactors
+
+| Refactor | Status | Impact |
+|----------|--------|--------|
+| **Dependency Injection Pattern** | ✅ Complete | Single client instance, testable architecture |
+| **Config Module** | ✅ Complete | Fail-fast validation, centralized environment handling |
+| **Shared Formatters** | ✅ Complete | Consistent output formatting, DRY code |
+| **Tour Iterator Utility** | ✅ Complete | Async iteration over tours/days for venue research |
+| **Structured Output Types** | ✅ Complete | All tools return `ToolResult<T>` with data + text |
+| **GitHub Actions CI** | ✅ Complete | PR/push testing with Node 20.x/22.x matrix |
+| **TypeScript Test Config** | ✅ Complete | Proper `tsconfig.test.json` for test files |
+
+### Remaining Refactoring Tasks (P3 Priority)
+
+| Task | Effort | Value | Description |
+|------|--------|-------|-------------|
+| **Remove `[key: string]: unknown`** | Low | Medium | Replace catch-all index signatures with proper typed API responses |
+| **Logging Middleware** | Medium | High | Add structured logging for debugging and monitoring (request/response logging, error tracking) |
+| **Error Type Hierarchy** | Medium | High | Create typed error classes: `AuthError`, `NotFoundError`, `ValidationError`, `RateLimitError` |
+| **Request Retry Logic** | Low | Medium | Add exponential backoff for transient failures |
+| **Response Caching** | Medium | Medium | Cache tour/venue data with TTL for repeated lookups |
+
+### Architecture Changes Summary
+
+**Structured Outputs Pattern:**
+```typescript
+// All tools now return ToolResult<T>
+export interface ToolResult<T> {
+  data: T;   // Structured data for programmatic access
+  text: string; // Human-readable formatted text
+}
+
+// Example: getTodaySchedule returns:
+ToolResult<DayScheduleOutput | null>
+```
+
+**New Type System (`src/types/outputs.ts`):**
+- `ScheduleItemOutput`, `DayScheduleOutput`, `ScheduleMutationOutput`
+- `TourOutput`, `TourListOutput`, `UpcomingShowsOutput`
+- `VenueSearchOutput`, `VenueDetailsOutput`
+- `TourCrewOutput`, `TourHotelsOutput`, `TourEventsOutput`
+- `DayNotesOutput`
+
+### Known API Limitations
+- ❌ No global venue search (workaround: search within user's tours)
+- ❌ No day-event creation endpoint (must use desktop client)
+- ❌ No venue create/update endpoints
 

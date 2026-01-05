@@ -1,5 +1,6 @@
 import type { MasterTourClient, TourHotelsResponse, HotelDayInfo } from '../api/client.js';
 import { format, parseISO } from 'date-fns';
+import type { ToolResult, TourHotelsOutput, HotelOutput } from '../types/outputs.js';
 
 export interface GetTourHotelsParams {
   tourId?: string;
@@ -8,7 +9,7 @@ export interface GetTourHotelsParams {
 /**
  * Formats a date string for display
  */
-function formatDate(dateStr: string): string {
+function formatDateStr(dateStr: string): string {
   try {
     const date = parseISO(dateStr.split(' ')[0]);
     return format(date, 'EEE, MMM d');
@@ -22,7 +23,7 @@ function formatDate(dateStr: string): string {
  */
 function formatDayHotels(day: HotelDayInfo): string[] {
   const lines: string[] = [];
-  const dateStr = formatDate(day.dayDate);
+  const dateStr = formatDateStr(day.dayDate);
   const location = [day.city, day.state].filter(Boolean).join(', ');
 
   lines.push(`📅 ${dateStr} - ${day.name}`);
@@ -53,13 +54,14 @@ function formatDayHotels(day: HotelDayInfo): string[] {
 }
 
 /**
- * Gets hotel information for a tour
+ * Gets hotel information for a tour.
+ * Caller should resolve tourId from config if not provided.
  */
 export async function getTourHotels(
   client: MasterTourClient,
   params: GetTourHotelsParams
-): Promise<string> {
-  const tourId = params.tourId || process.env.MASTERTOUR_DEFAULT_TOUR_ID;
+): Promise<ToolResult<TourHotelsOutput>> {
+  const { tourId } = params;
 
   if (!tourId) {
     throw new Error(
@@ -67,20 +69,66 @@ export async function getTourHotels(
     );
   }
 
-  const data = await client.getTourHotels(tourId);
-  const { tour, days } = data;
+  const response = await client.getTourHotels(tourId);
+  const { tour, days } = response;
 
+  // Filter to days with hotel info
+  const daysWithHotelInfo = days.filter(
+    (d) => (d.hotels && d.hotels.length > 0) || (d.hotelNotes && d.hotelNotes.trim())
+  );
+
+  // Build structured data
+  const hotels: HotelOutput[] = [];
+  for (const day of daysWithHotelInfo) {
+    if (day.hotels && day.hotels.length > 0) {
+      for (const hotel of day.hotels) {
+        hotels.push({
+          dayId: day.dayId || '',
+          date: day.dayDate.split(' ')[0],
+          city: day.city || '',
+          hotelName: hotel.name,
+          address: hotel.address || undefined,
+          phone: hotel.phone || undefined,
+          confirmation: hotel.confirmationNumber || undefined,
+          checkIn: hotel.checkIn || undefined,
+          checkOut: hotel.checkOut || undefined,
+          notes: day.hotelNotes || undefined,
+        });
+      }
+    } else if (day.hotelNotes) {
+      // Day with only notes
+      hotels.push({
+        dayId: day.dayId || '',
+        date: day.dayDate.split(' ')[0],
+        city: day.city || '',
+        hotelName: 'See Notes',
+        notes: day.hotelNotes,
+      });
+    }
+  }
+
+  const data: TourHotelsOutput = {
+    tourId,
+    hotels,
+    totalCount: hotels.length,
+  };
+
+  // Build formatted text
+  const text = formatHotelsText(tour, daysWithHotelInfo);
+
+  return { data, text };
+}
+
+function formatHotelsText(
+  tour: TourHotelsResponse['tour'],
+  daysWithHotelInfo: HotelDayInfo[]
+): string {
   const lines: string[] = [
     `🏨 Hotel Information`,
     `🎸 ${tour.artistName} - ${tour.legName}`,
     '─'.repeat(50),
     '',
   ];
-
-  // Filter to days with hotel info
-  const daysWithHotelInfo = days.filter(
-    (d) => (d.hotels && d.hotels.length > 0) || (d.hotelNotes && d.hotelNotes.trim())
-  );
 
   if (daysWithHotelInfo.length === 0) {
     lines.push('ℹ️ No hotel information found for this tour.');

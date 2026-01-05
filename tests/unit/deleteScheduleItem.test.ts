@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { deleteScheduleItem } from '../../src/tools/deleteScheduleItem.ts';
-import type { MasterTourClient } from '../../src/api/client.js';
+import type { MasterTourClient } from '../../src/api/client.ts';
 
 describe('deleteScheduleItem', () => {
   const mockClient = {
@@ -87,8 +87,8 @@ describe('deleteScheduleItem', () => {
         dayId: 'day123',
       });
 
-      expect(result).toContain('Item to Delete');
-      expect(result).toContain('deleted');
+      expect(result.text).toContain('Item to Delete');
+      expect(result.text).toContain('deleted');
     });
   });
 });

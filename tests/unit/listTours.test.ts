@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { listTours } from '../../src/tools/listTours.js';
-import type { MasterTourClient } from '../../src/api/client.js';
+import { listTours } from '../../src/tools/listTours.ts';
+import type { MasterTourClient } from '../../src/api/client.ts';
 
 describe('listTours', () => {
   let mockClient: MasterTourClient;
@@ -40,13 +40,13 @@ describe('listTours', () => {
     const result = await listTours(mockClient);
 
     expect(mockClient.listTours).toHaveBeenCalledOnce();
-    expect(result).toContain('🎸 Available Tours');
-    expect(result).toContain('Test Artist');
-    expect(result).toContain('Spring 2024 Tour');
-    expect(result).toContain('tour-123');
-    expect(result).toContain('Another Artist');
-    expect(result).toContain('Summer Festival Run');
-    expect(result).toContain('tour-456');
+    expect(result.text).toContain('🎸 Available Tours');
+    expect(result.text).toContain('Test Artist');
+    expect(result.text).toContain('Spring 2024 Tour');
+    expect(result.text).toContain('tour-123');
+    expect(result.text).toContain('Another Artist');
+    expect(result.text).toContain('Summer Festival Run');
+    expect(result.text).toContain('tour-456');
   });
 
   it('indicates admin access for permission level 255', async () => {
@@ -64,7 +64,7 @@ describe('listTours', () => {
 
     const result = await listTours(mockClient);
 
-    expect(result).toContain('✏️ Edit Access');
+    expect(result.text).toContain('✏️ Edit Access');
   });
 
   it('indicates read-only for low permission levels', async () => {
@@ -82,7 +82,7 @@ describe('listTours', () => {
 
     const result = await listTours(mockClient);
 
-    expect(result).toContain('👁️ Read Only');
+    expect(result.text).toContain('👁️ Read Only');
   });
 
   it('returns friendly message when no tours available', async () => {
@@ -90,7 +90,7 @@ describe('listTours', () => {
 
     const result = await listTours(mockClient);
 
-    expect(result).toContain('No tours available');
+    expect(result.text).toContain('No tours available');
   });
 
   it('groups tours by organization', async () => {
@@ -123,10 +123,10 @@ describe('listTours', () => {
     const result = await listTours(mockClient);
 
     // Check organization headers appear
-    expect(result).toContain('Band A');
-    expect(result).toContain('Band B');
+    expect(result.text).toContain('Band A');
+    expect(result.text).toContain('Band B');
     // Check both legs appear under Band A
-    expect(result).toContain('Leg 1');
-    expect(result).toContain('Leg 2');
+    expect(result.text).toContain('Leg 1');
+    expect(result.text).toContain('Leg 2');
   });
 });

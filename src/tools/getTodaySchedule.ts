@@ -1,5 +1,6 @@
 import { format, parse } from 'date-fns';
 import type { MasterTourClient, DayResponse } from '../api/client.js';
+import type { ToolResult, DayScheduleOutput, ScheduleItemOutput } from '../types/outputs.js';
 
 export interface GetTodayScheduleInput {
   tourId?: string;
@@ -9,9 +10,9 @@ export interface GetTodayScheduleInput {
 export async function getTodaySchedule(
   client: MasterTourClient,
   input: GetTodayScheduleInput
-): Promise<string> {
-  // Resolve tour ID
-  const tourId = input.tourId || process.env.MASTERTOUR_DEFAULT_TOUR_ID;
+): Promise<ToolResult<DayScheduleOutput | null>> {
+  // Resolve tour ID (caller should provide from config if not in input)
+  const tourId = input.tourId;
   if (!tourId) {
     throw new Error('tourId is required. Provide it as input or set MASTERTOUR_DEFAULT_TOUR_ID environment variable.');
   }
@@ -24,7 +25,10 @@ export async function getTodaySchedule(
   
   // Handle case where no day exists for that date
   if (!summary || summary.length === 0) {
-    return `No schedule found for ${date}. The tour may not have activity on this date.`;
+    return {
+      data: null,
+      text: `No schedule found for ${date}. The tour may not have activity on this date.`,
+    };
   }
 
   // Get the day ID from the first summary item
@@ -33,7 +37,41 @@ export async function getTodaySchedule(
   // Get full day details with schedule
   const dayResponse = await client.getDay(dayId);
 
-  return formatSchedule(dayResponse.day, dayId);
+  return buildScheduleResult(dayResponse.day, dayId, tourId);
+}
+
+function buildScheduleResult(
+  day: DayResponse['day'],
+  dayId: string,
+  tourId: string
+): ToolResult<DayScheduleOutput> {
+  // Build structured data
+  const items: ScheduleItemOutput[] = (day.scheduleItems || []).map((item) => ({
+    id: item.id,
+    syncId: item.syncId,
+    title: item.title,
+    startTime: formatTime(item.paulStartTime),
+    endTime: formatTime(item.paulEndTime),
+    details: item.details || undefined,
+  }));
+
+  const data: DayScheduleOutput = {
+    dayId,
+    tourId,
+    date: day.dayDate.split(' ')[0],
+    name: day.name,
+    dayType: day.dayType || '',
+    city: day.city,
+    state: day.state,
+    country: day.country,
+    timezone: day.timeZone,
+    items,
+  };
+
+  // Build formatted text
+  const text = formatSchedule(day, dayId);
+
+  return { data, text };
 }
 
 export function formatSchedule(day: DayResponse['day'], dayId: string): string {
