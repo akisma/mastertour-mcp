@@ -1,4 +1,4 @@
-import { fromZonedTime, formatInTimeZone } from 'date-fns-tz';
+import { localTimeToUtc } from '../utils/datetime.js';
 import type { MasterTourClient } from '../api/client.js';
 import type { ToolResult, ScheduleMutationOutput } from '../types/outputs.js';
 
@@ -15,12 +15,6 @@ export interface UpdateScheduleItemInput {
  * Convert local venue time to UTC datetime string for API.
  * API expects startDatetime/endDatetime in UTC ("YYYY-MM-DD HH:MM:SS").
  */
-function localTimeToUtc(date: string, time: string, timezone: string): string {
-  const localDatetime = `${date}T${time}:00`;
-  const utcDate = fromZonedTime(localDatetime, timezone);
-  return formatInTimeZone(utcDate, 'UTC', 'yyyy-MM-dd HH:mm:ss');
-}
-
 /**
  * Extract HH:MM from paulStartTime/paulEndTime format "YYYY-MM-DD HH:MM:SS"
  */

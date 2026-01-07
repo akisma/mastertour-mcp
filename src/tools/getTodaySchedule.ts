@@ -1,6 +1,7 @@
 import { format, parse } from 'date-fns';
 import type { MasterTourClient, DayResponse } from '../api/client.js';
 import type { ToolResult, DayScheduleOutput, ScheduleItemOutput } from '../types/outputs.js';
+import { validateTourId } from '../utils/validation.js';
 
 export interface GetTodayScheduleInput {
   tourId?: string;
@@ -11,11 +12,7 @@ export async function getTodaySchedule(
   client: MasterTourClient,
   input: GetTodayScheduleInput
 ): Promise<ToolResult<DayScheduleOutput | null>> {
-  // Resolve tour ID (caller should provide from config if not in input)
-  const tourId = input.tourId;
-  if (!tourId) {
-    throw new Error('tourId is required. Provide it as input or set MASTERTOUR_DEFAULT_TOUR_ID environment variable.');
-  }
+  const tourId = validateTourId(input.tourId);
 
   // Resolve date (default to today)
   const date = input.date || new Date().toISOString().split('T')[0];

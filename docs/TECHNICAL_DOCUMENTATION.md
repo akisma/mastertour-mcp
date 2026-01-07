@@ -71,9 +71,16 @@ src/
 │   ├── searchPastVenues.ts
 │   ├── getVenueDetails.ts
 │   └── getUpcomingShows.ts
-└── utils/
-    ├── formatters.ts     # Shared output formatting
-    └── tourIterator.ts   # Tour/day iteration utilities
+├── types/
+│   ├── index.ts          # Type exports
+│   └── outputs.ts        # ToolResult<T> and output types
+├── utils/
+│   ├── formatters.ts     # Shared output formatting
+│   ├── datetime.ts       # Time zone conversions (localTimeToUtc)
+│   ├── validation.ts     # Input validation helpers (validateTourId)
+│   └── tourIterator.ts   # Tour/day iteration utilities
+└── testing/
+    └── mockClient.ts     # Test utilities (createMockClient, mockDayResponse)
 ```
 
 ### Dependency Injection Pattern

@@ -13,7 +13,6 @@ export interface OAuthCredentials {
 
 /**
  * Creates an OAuth client with provided credentials.
- * Prefer this over createOAuthClientFromEnv for explicit dependency injection.
  */
 export function createOAuthClient(credentials: OAuthCredentials): OAuthClient {
   const oauth = new OAuth({
@@ -44,22 +43,4 @@ export function createOAuthClientFromConfig(config: Config): OAuthClient {
     consumerKey: config.consumerKey,
     consumerSecret: config.consumerSecret,
   });
-}
-
-/**
- * Creates an OAuth client from environment variables.
- * @deprecated Prefer createOAuthClient with explicit credentials for testability.
- */
-export function createOAuthClientFromEnv(): OAuthClient {
-  const key = process.env.MASTERTOUR_KEY;
-  const secret = process.env.MASTERTOUR_SECRET;
-
-  if (!key) {
-    throw new Error('MASTERTOUR_KEY environment variable is required');
-  }
-  if (!secret) {
-    throw new Error('MASTERTOUR_SECRET environment variable is required');
-  }
-
-  return createOAuthClient({ consumerKey: key, consumerSecret: secret });
 }

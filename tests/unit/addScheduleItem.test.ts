@@ -21,7 +21,7 @@ describe('addScheduleItem', () => {
         timeZone: 'America/Los_Angeles',
       }
     });
-    mockClient.createScheduleItem.mockResolvedValue({ id: 'new-item-123' });
+    mockClient.createScheduleItem.mockResolvedValue({ id: 'new-item-123', syncId: 'sync-456' });
   });
 
   describe('input validation', () => {

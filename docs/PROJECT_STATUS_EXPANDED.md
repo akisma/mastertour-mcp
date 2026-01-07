@@ -1,12 +1,12 @@
 # Mastertour MCP - Project Status
 
-> Last Updated: January 4, 2026 (Evening)
+> Last Updated: January 6, 2026
 
 ## Current Phase: Post-Phase 4 - Architecture Refactoring
 
-### Status: ✅ Phase 4 Complete + Refactoring In Progress
+### Status: ✅ Phase 4 Complete + Code Quality Refactoring Complete
 
-All phases complete. 12 MCP tools total, 127 tests passing across 17 test files. Completed major architecture refactoring: DI pattern, config module, shared formatters, tour iterator, and structured outputs. CI/CD pipeline established.
+All phases complete. 12 MCP tools total, 146 tests passing across 20 test files. Completed major architecture refactoring: DI pattern, config module, shared formatters, tour iterator, structured outputs, and code quality improvements. CI/CD pipeline established.
 
 ---
 
@@ -99,6 +99,8 @@ Tools:
 | Structured outputs refactoring | ✅ Complete | Jan 4, 2026 |
 | GitHub Actions CI | ✅ Complete | Jan 4, 2026 |
 | 127 unit tests passing (17 files) | ✅ Complete | Jan 4, 2026 |
+| Code quality refactoring (types, utils) | ✅ Complete | Jan 6, 2026 |
+| 146 unit tests passing (20 files) | ✅ Complete | Jan 6, 2026 |
 
 ---
 
@@ -190,11 +192,22 @@ Tools:
 
 | Task | Effort | Value | Description |
 |------|--------|-------|-------------|
-| **Remove `[key: string]: unknown`** | Low | Medium | Replace catch-all index signatures with proper typed API responses |
+| ~~**Remove `[key: string]: unknown`**~~ | ~~Low~~ | ~~Medium~~ | ✅ **Complete** - Replaced with explicit fields + `extra?: Record<string, unknown>` |
 | **Logging Middleware** | Medium | High | Add structured logging for debugging and monitoring (request/response logging, error tracking) |
 | **Error Type Hierarchy** | Medium | High | Create typed error classes: `AuthError`, `NotFoundError`, `ValidationError`, `RateLimitError` |
 | **Request Retry Logic** | Low | Medium | Add exponential backoff for transient failures |
 | **Response Caching** | Medium | Medium | Cache tour/venue data with TTL for repeated lookups |
+
+### Code Quality Refactoring (Completed Jan 6, 2026)
+
+| Task | Status | Description |
+|------|--------|-------------|
+| Delete dead types file | ✅ Complete | Removed unused `src/types/mastertour.ts` |
+| Remove index signatures | ✅ Complete | 16 interfaces now have explicit fields |
+| Extract `localTimeToUtc` | ✅ Complete | Shared utility in `src/utils/datetime.ts` |
+| Create `validateTourId` | ✅ Complete | Shared helper in `src/utils/validation.ts` |
+| Create mock client factory | ✅ Complete | Test utility in `src/testing/mockClient.ts` |
+| Remove deprecated OAuth func | ✅ Complete | Removed `createOAuthClientFromEnv` |
 
 ### Architecture Changes Summary
 

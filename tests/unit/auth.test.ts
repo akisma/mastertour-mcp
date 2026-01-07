@@ -1,33 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 describe('OAuth Module', () => {
-  const originalEnv = process.env;
-
   beforeEach(() => {
     vi.resetModules();
-    process.env = { ...originalEnv };
-  });
-
-  afterEach(() => {
-    process.env = originalEnv;
-  });
-
-  describe('createOAuthClientFromEnv', () => {
-    it('throws error if MASTERTOUR_KEY is missing', async () => {
-      delete process.env.MASTERTOUR_KEY;
-      process.env.MASTERTOUR_SECRET = 'test-secret';
-
-      const { createOAuthClientFromEnv } = await import('../../src/auth/oauth.ts');
-      expect(() => createOAuthClientFromEnv()).toThrow('MASTERTOUR_KEY');
-    });
-
-    it('throws error if MASTERTOUR_SECRET is missing', async () => {
-      process.env.MASTERTOUR_KEY = 'test-key';
-      delete process.env.MASTERTOUR_SECRET;
-
-      const { createOAuthClientFromEnv } = await import('../../src/auth/oauth.ts');
-      expect(() => createOAuthClientFromEnv()).toThrow('MASTERTOUR_SECRET');
-    });
   });
 
   describe('createOAuthClient', () => {

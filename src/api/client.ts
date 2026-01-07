@@ -19,31 +19,37 @@ export interface HotelInfo {
   checkIn?: string;
   checkOut?: string;
   confirmationNumber?: string;
-  [key: string]: unknown;
+  phone?: string;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
 }
 
 export interface HotelDayInfo {
   id: string;
+  dayId?: string;
   name: string;
   dayDate: string;
   city: string;
   state: string;
   hotelNotes: string;
   hotels: HotelInfo[];
-  [key: string]: unknown;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
 }
 
 export interface TourHotelsResponse {
   tour: {
     artistName: string;
     legName: string;
-    [key: string]: unknown;
+    /** Additional fields from API not explicitly typed */
+    extra?: Record<string, unknown>;
   };
   days: HotelDayInfo[];
 }
 
 export interface CrewMember {
   contactId: string;
+  id?: string;
   firstName: string;
   lastName: string;
   preferredName?: string;
@@ -51,7 +57,8 @@ export interface CrewMember {
   company?: string;
   email?: string;
   phone?: string;
-  [key: string]: unknown;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
 }
 
 export interface EventDayInfo {
@@ -62,14 +69,16 @@ export interface EventDayInfo {
   city: string;
   state: string;
   country: string;
-  [key: string]: unknown;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
 }
 
 export interface TourEventsResponse {
   tour: {
     artistName: string;
     legName: string;
-    [key: string]: unknown;
+    /** Additional fields from API not explicitly typed */
+    extra?: Record<string, unknown>;
   };
   days: EventDayInfo[];
 }
@@ -92,7 +101,8 @@ export interface VenueProduction {
   dockType?: string;
   powerComments?: string;
   riggingComments?: string;
-  [key: string]: unknown;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
 }
 
 export interface VenueFacilities {
@@ -102,7 +112,8 @@ export interface VenueFacilities {
   busParking?: string;
   guestParking?: string;
   parkingComments?: string;
-  [key: string]: unknown;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
 }
 
 export interface VenueEquipment {
@@ -111,7 +122,8 @@ export interface VenueEquipment {
   video?: string;
   backline?: string;
   staging?: string;
-  [key: string]: unknown;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
 }
 
 export interface VenueLogistics {
@@ -121,7 +133,8 @@ export interface VenueLogistics {
   groundTransport?: string;
   areaHotels?: string;
   areaRestaurants?: string;
-  [key: string]: unknown;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
 }
 
 export interface VenueLocalCrew {
@@ -130,7 +143,8 @@ export interface VenueLocalCrew {
   minimumOUT?: string;
   penalties?: string;
   crewComments?: string;
-  [key: string]: unknown;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
 }
 
 export interface DayEvent {
@@ -165,7 +179,8 @@ export interface DayEvent {
   promoterCity?: string;
   promoterState?: string;
   promoterContacts?: VenueContact[];
-  [key: string]: unknown;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
 }
 
 export interface TourAllResponse {
@@ -175,7 +190,8 @@ export interface TourAllResponse {
     tourName: string;
     legName: string;
     days: EventDayInfo[];
-    [key: string]: unknown;
+    /** Additional fields from API not explicitly typed */
+    extra?: Record<string, unknown>;
   };
 }
 
@@ -188,7 +204,7 @@ export interface MasterTourClient {
   getTourEvents(tourId: string): Promise<TourEventsResponse>;
   getTourAll(tourId: string): Promise<TourAllResponse>;
   getDayEvents(dayId: string): Promise<DayEvent[]>;
-  createScheduleItem(params: CreateScheduleItemParams): Promise<{ id: string }>;
+  createScheduleItem(params: CreateScheduleItemParams): Promise<{ id: string; syncId: string }>;
   updateScheduleItem(itemId: string, params: UpdateScheduleItemParams): Promise<void>;
   deleteScheduleItem(itemId: string): Promise<void>;
   updateDayNotes(dayId: string, params: UpdateDayNotesParams): Promise<void>;
@@ -211,8 +227,13 @@ export interface DayResponse {
     city: string;
     state: string;
     country: string;
+    generalNotes?: string;
+    hotelNotes?: string;
+    travelNotes?: string;
+    syncId?: string;
     scheduleItems?: ScheduleItem[];
-    [key: string]: unknown;
+    /** Additional fields from API not explicitly typed */
+    extra?: Record<string, unknown>;
   };
 }
 
@@ -228,7 +249,8 @@ export interface ScheduleItem {
   details?: string;
   isConfirmed?: boolean;
   isComplete?: boolean;
-  [key: string]: unknown;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
 }
 
 export interface DaySummaryResponse {
@@ -239,7 +261,8 @@ export interface DaySummaryResponse {
   city?: string;
   state?: string;
   country?: string;
-  [key: string]: unknown;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
 }
 
 export interface CreateScheduleItemParams {
@@ -399,8 +422,8 @@ export function createMasterTourClient(oauthClient: OAuthClient): MasterTourClie
       return get<DaySummaryResponse[]>(`/tour/${tourId}/summary/${date}`);
     },
 
-    async createScheduleItem(params: CreateScheduleItemParams): Promise<{ id: string }> {
-      return post<{ id: string }>('/itinerary', params);
+    async createScheduleItem(params: CreateScheduleItemParams): Promise<{ id: string; syncId: string }> {
+      return post<{ id: string; syncId: string }>('/itinerary', params);
     },
 
     async updateScheduleItem(itemId: string, params: UpdateScheduleItemParams): Promise<void> {
