@@ -1,4 +1,4 @@
-import { fromZonedTime, formatInTimeZone } from 'date-fns-tz';
+import { localTimeToUtc } from '../utils/datetime.js';
 import type { ToolResult, ScheduleMutationOutput } from '../types/outputs.js';
 
 export interface AddScheduleItemInput {
@@ -30,15 +30,6 @@ export interface AddScheduleItemClient {
  * Convert local venue time to UTC datetime string for API.
  * API expects startDatetime/endDatetime in UTC ("YYYY-MM-DD HH:MM:SS").
  */
-function localTimeToUtc(date: string, time: string, timezone: string): string {
-  // Parse as local time in the venue's timezone
-  const localDatetime = `${date}T${time}:00`;
-  // Convert to UTC
-  const utcDate = fromZonedTime(localDatetime, timezone);
-  // Format in UTC (not system local time)
-  return formatInTimeZone(utcDate, 'UTC', 'yyyy-MM-dd HH:mm:ss');
-}
-
 export async function addScheduleItem(
   client: AddScheduleItemClient,
   input: AddScheduleItemInput

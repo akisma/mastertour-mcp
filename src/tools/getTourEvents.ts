@@ -1,6 +1,7 @@
 import type { MasterTourClient, TourEventsResponse, EventDayInfo } from '../api/client.js';
 import { format, parseISO } from 'date-fns';
 import type { ToolResult, TourEventsOutput, TourEventOutput } from '../types/outputs.js';
+import { validateTourId } from '../utils/validation.js';
 
 export interface GetTourEventsParams {
   tourId?: string;
@@ -65,13 +66,7 @@ export async function getTourEvents(
   client: MasterTourClient,
   params: GetTourEventsParams
 ): Promise<ToolResult<TourEventsOutput>> {
-  const { tourId } = params;
-
-  if (!tourId) {
-    throw new Error(
-      'Tour ID is required. Provide tourId parameter or set MASTERTOUR_DEFAULT_TOUR_ID environment variable.'
-    );
-  }
+  const tourId = validateTourId(params.tourId);
 
   const response = await client.getTourEvents(tourId);
   const { tour, days } = response;

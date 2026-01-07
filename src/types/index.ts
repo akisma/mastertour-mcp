@@ -2,4 +2,4 @@
  * Type exports for mastertour-mcp
  */
 
-export * from './mastertour.js';
+export * from './outputs.js';

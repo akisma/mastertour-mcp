@@ -1,5 +1,6 @@
 import type { MasterTourClient, CrewMember } from '../api/client.js';
 import type { ToolResult, TourCrewOutput, CrewMemberOutput } from '../types/outputs.js';
+import { validateTourId } from '../utils/validation.js';
 
 export interface GetTourCrewParams {
   tourId?: string;
@@ -47,13 +48,7 @@ export async function getTourCrew(
   client: MasterTourClient,
   params: GetTourCrewParams
 ): Promise<ToolResult<TourCrewOutput>> {
-  const { tourId } = params;
-
-  if (!tourId) {
-    throw new Error(
-      'Tour ID is required. Provide tourId parameter or set MASTERTOUR_DEFAULT_TOUR_ID environment variable.'
-    );
-  }
+  const tourId = validateTourId(params.tourId);
 
   const crew = await client.getTourCrew(tourId);
 

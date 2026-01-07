@@ -1,6 +1,7 @@
 import type { MasterTourClient, TourHotelsResponse, HotelDayInfo } from '../api/client.js';
 import { format, parseISO } from 'date-fns';
 import type { ToolResult, TourHotelsOutput, HotelOutput } from '../types/outputs.js';
+import { validateTourId } from '../utils/validation.js';
 
 export interface GetTourHotelsParams {
   tourId?: string;
@@ -61,13 +62,7 @@ export async function getTourHotels(
   client: MasterTourClient,
   params: GetTourHotelsParams
 ): Promise<ToolResult<TourHotelsOutput>> {
-  const { tourId } = params;
-
-  if (!tourId) {
-    throw new Error(
-      'Tour ID is required. Provide tourId parameter or set MASTERTOUR_DEFAULT_TOUR_ID environment variable.'
-    );
-  }
+  const tourId = validateTourId(params.tourId);
 
   const response = await client.getTourHotels(tourId);
   const { tour, days } = response;
