@@ -25,6 +25,15 @@ import { getTourEvents } from './tools/getTourEvents.js';
 import { searchPastVenues } from './tools/searchPastVenues.js';
 import { getVenueDetails } from './tools/getVenueDetails.js';
 import { getUpcomingShows } from './tools/getUpcomingShows.js';
+// New tools for complete API coverage
+import { getEventGuestlist } from './tools/getEventGuestlist.js';
+import { addGuestRequest } from './tools/addGuestRequest.js';
+import { updateGuestRequest } from './tools/updateGuestRequest.js';
+import { getEventSetlist } from './tools/getEventSetlist.js';
+import { getHotelRoomlist } from './tools/getHotelRoomlist.js';
+import { getHotelContacts } from './tools/getHotelContacts.js';
+import { getCompanyContacts } from './tools/getCompanyContacts.js';
+import { getPushNotifications } from './tools/getPushNotifications.js';
 
 /**
  * Dependencies for the MCP server.
@@ -217,6 +226,136 @@ function registerTools(server: McpServer, deps: ServerDependencies): void {
     },
     async ({ tourId, limit, daysAhead }) => {
       const result = await getUpcomingShows(client, { tourId, limit, daysAhead });
+      return { content: [{ type: 'text', text: result.text }] };
+    }
+  );
+
+  // ============================================================================
+  // Guest List Tools (P1)
+  // ============================================================================
+
+  // Tool: get_event_guestlist
+  server.tool(
+    'get_event_guestlist',
+    'Get the guest list for an event, including names, ticket counts, and status',
+    {
+      eventId: z.string().describe('The event ID to get the guest list for'),
+    },
+    async ({ eventId }) => {
+      const result = await getEventGuestlist(client, { eventId });
+      return { content: [{ type: 'text', text: result.text }] };
+    }
+  );
+
+  // Tool: add_guest_request
+  server.tool(
+    'add_guest_request',
+    'Add a new guest to an event\'s guest list',
+    {
+      eventId: z.string().describe('The event ID to add the guest to'),
+      name: z.string().describe('Name of the guest'),
+      tickets: z.number().describe('Number of tickets requested'),
+      notes: z.string().optional().describe('Additional notes about the request'),
+      willCall: z.boolean().optional().describe('Whether tickets will be at will call (default false)'),
+    },
+    async ({ eventId, name, tickets, notes, willCall }) => {
+      const result = await addGuestRequest(client, { eventId, name, tickets, notes, willCall });
+      return { content: [{ type: 'text', text: result.text }] };
+    }
+  );
+
+  // Tool: update_guest_request
+  server.tool(
+    'update_guest_request',
+    'Update an existing guest list request',
+    {
+      guestListId: z.string().describe('The ID of the guest list entry to update'),
+      name: z.string().optional().describe('Updated guest name'),
+      tickets: z.number().optional().describe('Updated ticket count'),
+      status: z.string().optional().describe('Updated status (e.g., "Approved", "Pending", "Denied")'),
+      notes: z.string().optional().describe('Updated notes'),
+      willCall: z.boolean().optional().describe('Updated will call status'),
+    },
+    async ({ guestListId, name, tickets, status, notes, willCall }) => {
+      const result = await updateGuestRequest(client, { guestListId, name, tickets, status, notes, willCall });
+      return { content: [{ type: 'text', text: result.text }] };
+    }
+  );
+
+  // ============================================================================
+  // Setlist & Room List Tools (P2)
+  // ============================================================================
+
+  // Tool: get_event_setlist
+  server.tool(
+    'get_event_setlist',
+    'Get the setlist for an event, including song order and durations',
+    {
+      eventId: z.string().describe('The event ID to get the setlist for'),
+    },
+    async ({ eventId }) => {
+      const result = await getEventSetlist(client, { eventId });
+      return { content: [{ type: 'text', text: result.text }] };
+    }
+  );
+
+  // Tool: get_hotel_roomlist
+  server.tool(
+    'get_hotel_roomlist',
+    'Get room assignments for a hotel, including guest names and room numbers',
+    {
+      hotelId: z.string().describe('The hotel ID to get room assignments for'),
+    },
+    async ({ hotelId }) => {
+      const result = await getHotelRoomlist(client, { hotelId });
+      return { content: [{ type: 'text', text: result.text }] };
+    }
+  );
+
+  // ============================================================================
+  // Contact Tools (P3)
+  // ============================================================================
+
+  // Tool: get_hotel_contacts
+  server.tool(
+    'get_hotel_contacts',
+    'Get contact information for hotel staff (front desk, manager, etc.)',
+    {
+      hotelId: z.string().describe('The hotel ID to get contacts for'),
+    },
+    async ({ hotelId }) => {
+      const result = await getHotelContacts(client, { hotelId });
+      return { content: [{ type: 'text', text: result.text }] };
+    }
+  );
+
+  // Tool: get_company_contacts
+  server.tool(
+    'get_company_contacts',
+    'Get contact information for a company (promoter, agency, vendor, etc.)',
+    {
+      companyId: z.string().describe('The company ID to get contacts for'),
+    },
+    async ({ companyId }) => {
+      const result = await getCompanyContacts(client, { companyId });
+      return { content: [{ type: 'text', text: result.text }] };
+    }
+  );
+
+  // ============================================================================
+  // Notification Tools (P4)
+  // ============================================================================
+
+  // Tool: get_push_notifications
+  server.tool(
+    'get_push_notifications',
+    'Get push notification history',
+    {
+      limit: z.number().optional().describe('Maximum number of notifications to return'),
+      since: z.string().optional().describe('Only return notifications after this datetime (ISO format)'),
+    },
+    async ({ limit, since }) => {
+      const result = await getPushNotifications(client, { limit, since });
       return { content: [{ type: 'text', text: result.text }] };
     }
   );

@@ -213,3 +213,123 @@ export interface DayNotesOutput {
   notes: string;
   previousNotes?: string;
 }
+
+// ============================================================================
+// Guest List Types
+// ============================================================================
+
+export interface GuestRequestOutput {
+  id: string;
+  name: string;
+  tickets: number;
+  status: string;
+  requestedBy?: string;
+  notes?: string;
+  willCall?: boolean;
+}
+
+export interface GuestListOutput {
+  eventId: string;
+  eventName?: string;
+  date?: string;
+  guests: GuestRequestOutput[];
+  totalGuests: number;
+  totalTickets: number;
+}
+
+export interface GuestMutationOutput {
+  success: boolean;
+  guestListId: string;
+  action: 'created' | 'updated';
+  name: string;
+  tickets: number;
+}
+
+// ============================================================================
+// Setlist Types
+// ============================================================================
+
+export interface SetlistItemOutput {
+  position: number;
+  songTitle: string;
+  duration?: string;
+  notes?: string;
+  isEncore?: boolean;
+}
+
+export interface SetlistOutput {
+  eventId: string;
+  eventName?: string;
+  date?: string;
+  songs: SetlistItemOutput[];
+  totalSongs: number;
+  estimatedDuration?: string;
+}
+
+// ============================================================================
+// Room List Types
+// ============================================================================
+
+export interface RoomAssignmentOutput {
+  roomNumber?: string;
+  roomType?: string;
+  guestName: string;
+  checkIn?: string;
+  checkOut?: string;
+  confirmationNumber?: string;
+  notes?: string;
+}
+
+export interface RoomListOutput {
+  hotelId: string;
+  hotelName?: string;
+  rooms: RoomAssignmentOutput[];
+  totalRooms: number;
+}
+
+// ============================================================================
+// Contact Types (Hotel & Company)
+// ============================================================================
+
+export interface ContactOutput {
+  name: string;
+  title?: string;
+  email?: string;
+  phone?: string;
+  fax?: string;
+  department?: string;
+}
+
+export interface HotelContactsOutput {
+  hotelId: string;
+  hotelName?: string;
+  contacts: ContactOutput[];
+  totalContacts: number;
+}
+
+export interface CompanyContactsOutput {
+  companyId: string;
+  companyName?: string;
+  contacts: ContactOutput[];
+  totalContacts: number;
+}
+
+// ============================================================================
+// Push Notification Types
+// ============================================================================
+
+export interface PushNotificationOutput {
+  id: string;
+  timestamp: string;
+  title: string;
+  message: string;
+  type?: string;
+  tourId?: string;
+  read?: boolean;
+}
+
+export interface PushNotificationsOutput {
+  notifications: PushNotificationOutput[];
+  totalCount: number;
+  unreadCount?: number;
+}

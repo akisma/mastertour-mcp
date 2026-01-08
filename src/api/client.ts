@@ -195,6 +195,137 @@ export interface TourAllResponse {
   };
 }
 
+// ============================================================================
+// Guest List Types
+// ============================================================================
+
+export interface GuestRequest {
+  id: string;
+  name: string;
+  tickets: number;
+  status: string;
+  requestedBy?: string;
+  notes?: string;
+  willCall?: boolean;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
+}
+
+export interface GuestListResponse {
+  eventId: string;
+  eventName?: string;
+  date?: string;
+  guests: GuestRequest[];
+}
+
+export interface CreateGuestRequestParams {
+  eventId: string;
+  name: string;
+  tickets: number;
+  notes?: string;
+  willCall?: boolean;
+}
+
+export interface UpdateGuestRequestParams {
+  name?: string;
+  tickets?: number;
+  status?: string;
+  notes?: string;
+  willCall?: boolean;
+}
+
+// ============================================================================
+// Setlist Types
+// ============================================================================
+
+export interface SetlistItem {
+  position: number;
+  songTitle: string;
+  duration?: string;
+  notes?: string;
+  isEncore?: boolean;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
+}
+
+export interface SetlistResponse {
+  eventId: string;
+  eventName?: string;
+  date?: string;
+  songs: SetlistItem[];
+}
+
+// ============================================================================
+// Room List Types
+// ============================================================================
+
+export interface RoomAssignment {
+  roomNumber?: string;
+  roomType?: string;
+  guestName: string;
+  checkIn?: string;
+  checkOut?: string;
+  confirmationNumber?: string;
+  notes?: string;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
+}
+
+export interface RoomListResponse {
+  hotelId: string;
+  hotelName?: string;
+  rooms: RoomAssignment[];
+}
+
+// ============================================================================
+// Contact Types
+// ============================================================================
+
+export interface ContactInfo {
+  name: string;
+  title?: string;
+  email?: string;
+  phone?: string;
+  fax?: string;
+  department?: string;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
+}
+
+export interface HotelContactsResponse {
+  hotelId: string;
+  hotelName?: string;
+  contacts: ContactInfo[];
+}
+
+export interface CompanyContactsResponse {
+  companyId: string;
+  companyName?: string;
+  contacts: ContactInfo[];
+}
+
+// ============================================================================
+// Push Notification Types
+// ============================================================================
+
+export interface PushNotification {
+  id: string;
+  timestamp: string;
+  title: string;
+  message: string;
+  type?: string;
+  tourId?: string;
+  read?: boolean;
+  /** Additional fields from API not explicitly typed */
+  extra?: Record<string, unknown>;
+}
+
+export interface PushNotificationsResponse {
+  notifications: PushNotification[];
+  totalCount: number;
+  unreadCount?: number;
+}
+
 export interface MasterTourClient {
   listTours(): Promise<TourInfo[]>;
   getDay(dayId: string): Promise<DayResponse>;
@@ -208,6 +339,15 @@ export interface MasterTourClient {
   updateScheduleItem(itemId: string, params: UpdateScheduleItemParams): Promise<void>;
   deleteScheduleItem(itemId: string): Promise<void>;
   updateDayNotes(dayId: string, params: UpdateDayNotesParams): Promise<void>;
+  // New methods for complete API coverage
+  getEventGuestlist(eventId: string): Promise<GuestListResponse>;
+  createGuestRequest(params: CreateGuestRequestParams): Promise<{ id: string }>;
+  updateGuestRequest(guestListId: string, params: UpdateGuestRequestParams): Promise<void>;
+  getEventSetlist(eventId: string): Promise<SetlistResponse>;
+  getHotelRoomlist(hotelId: string): Promise<RoomListResponse>;
+  getHotelContacts(hotelId: string): Promise<HotelContactsResponse>;
+  getCompanyContacts(companyId: string): Promise<CompanyContactsResponse>;
+  getPushNotifications(params?: { limit?: number; since?: string }): Promise<PushNotificationsResponse>;
 }
 
 export interface UpdateDayNotesParams {
@@ -481,6 +621,76 @@ export function createMasterTourClient(oauthClient: OAuthClient): MasterTourClie
     async getDayEvents(dayId: string): Promise<DayEvent[]> {
       const data = await get<{ events: DayEvent[] }>(`/day/${dayId}/events`);
       return data.events || [];
+    },
+
+    async getEventGuestlist(eventId: string): Promise<GuestListResponse> {
+      const data = await get<{ guestlist: GuestRequest[]; event?: { name?: string; date?: string } }>(`/event/${eventId}/guestlist`);
+      return {
+        eventId,
+        eventName: data.event?.name,
+        date: data.event?.date,
+        guests: data.guestlist || [],
+      };
+    },
+
+    async createGuestRequest(params: CreateGuestRequestParams): Promise<{ id: string }> {
+      return post<{ id: string }>('/guestlist', params);
+    },
+
+    async updateGuestRequest(guestListId: string, params: UpdateGuestRequestParams): Promise<void> {
+      await put(`/guestlist/${guestListId}`, params);
+    },
+
+    async getEventSetlist(eventId: string): Promise<SetlistResponse> {
+      const data = await get<{ setlist: SetlistItem[]; event?: { name?: string; date?: string } }>(`/event/${eventId}/setlist`);
+      return {
+        eventId,
+        eventName: data.event?.name,
+        date: data.event?.date,
+        songs: data.setlist || [],
+      };
+    },
+
+    async getHotelRoomlist(hotelId: string): Promise<RoomListResponse> {
+      const data = await get<{ roomlist: RoomAssignment[]; hotel?: { name?: string } }>(`/hotel/${hotelId}/roomlist`);
+      return {
+        hotelId,
+        hotelName: data.hotel?.name,
+        rooms: data.roomlist || [],
+      };
+    },
+
+    async getHotelContacts(hotelId: string): Promise<HotelContactsResponse> {
+      const data = await get<{ contacts: ContactInfo[]; hotel?: { name?: string } }>(`/hotel/${hotelId}/contacts`);
+      return {
+        hotelId,
+        hotelName: data.hotel?.name,
+        contacts: data.contacts || [],
+      };
+    },
+
+    async getCompanyContacts(companyId: string): Promise<CompanyContactsResponse> {
+      const data = await get<{ contacts: ContactInfo[]; company?: { name?: string } }>(`/company/${companyId}/contacts`);
+      return {
+        companyId,
+        companyName: data.company?.name,
+        contacts: data.contacts || [],
+      };
+    },
+
+    async getPushNotifications(params?: { limit?: number; since?: string }): Promise<PushNotificationsResponse> {
+      let endpoint = '/push/history';
+      const queryParams: string[] = [];
+      if (params?.limit) queryParams.push(`limit=${params.limit}`);
+      if (params?.since) queryParams.push(`since=${encodeURIComponent(params.since)}`);
+      if (queryParams.length > 0) endpoint += `?${queryParams.join('&')}`;
+
+      const data = await get<{ notifications: PushNotification[]; totalCount?: number; unreadCount?: number }>(endpoint);
+      return {
+        notifications: data.notifications || [],
+        totalCount: data.totalCount ?? (data.notifications?.length || 0),
+        unreadCount: data.unreadCount,
+      };
     },
   };
 }

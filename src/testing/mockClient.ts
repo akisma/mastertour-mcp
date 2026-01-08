@@ -24,6 +24,15 @@ export type MockClient = MasterTourClient & {
   updateScheduleItem: MockFn;
   deleteScheduleItem: MockFn;
   updateDayNotes: MockFn;
+  // New methods for complete API coverage
+  getEventGuestlist: MockFn;
+  createGuestRequest: MockFn;
+  updateGuestRequest: MockFn;
+  getEventSetlist: MockFn;
+  getHotelRoomlist: MockFn;
+  getHotelContacts: MockFn;
+  getCompanyContacts: MockFn;
+  getPushNotifications: MockFn;
 };
 
 /**
@@ -48,6 +57,15 @@ export function createMockClient(overrides?: Partial<Record<keyof MasterTourClie
     updateScheduleItem: vi.fn(),
     deleteScheduleItem: vi.fn(),
     updateDayNotes: vi.fn(),
+    // New methods for complete API coverage
+    getEventGuestlist: vi.fn(),
+    createGuestRequest: vi.fn(),
+    updateGuestRequest: vi.fn(),
+    getEventSetlist: vi.fn(),
+    getHotelRoomlist: vi.fn(),
+    getHotelContacts: vi.fn(),
+    getCompanyContacts: vi.fn(),
+    getPushNotifications: vi.fn(),
     ...overrides,
   } as MockClient;
 }
