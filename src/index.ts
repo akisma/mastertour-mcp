@@ -259,8 +259,8 @@ async function main(): Promise<void> {
   await server.connect(transport);
 }
 
-// Only run main when executed directly (not imported for tests)
-const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+// Use pathToFileURL to handle paths with spaces correctly (spaces become %20 in import.meta.url)
+const isMainModule = process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href;
 if (isMainModule) {
   main().catch((error) => {
     console.error('Fatal error:', error);
